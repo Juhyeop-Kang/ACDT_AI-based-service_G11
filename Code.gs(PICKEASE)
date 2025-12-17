@@ -1,0 +1,813 @@
+// ===== 설정 =====
+const API_KEY = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+const HISTORY_SPREADSHEET_ID = '1V2tRsESLriaHOKFT3ePO-GsE90S38n9pxhzPyjfcyBc';
+const HISTORY_SHEET_NAME = '출력결과';
+const USER_SPREADSHEET_ID = '1GvCTUjfWHbjicnHWzNPnT047tjteiQuxn71iUtu5icU'; 
+const USER_SHEET_NAME = '시트1';
+const ADMIN_IDS = ['manager'];
+
+// ===== 웹 앱 진입점 =====
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('PickEase')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+// ===== 권한 강제 승인용 함수 (실행 후 삭제 가능) =====
+function forceAuth() {
+  console.log("권한 확인 및 갱신 중...");
+  
+  // 1. DriveApp 권한 확인 (drive 스코프)
+  const root = DriveApp.getRootFolder();
+  console.log("Drive Access OK: " + root.getName());
+
+  // 2. GmailApp 권한 확인 (gmail.send 스코프)
+  // 주의: 이 코드는 실행 시 본인에게 테스트 메일을 1통 발송합니다.
+  const email = Session.getActiveUser().getEmail();
+  if (email) {
+    GmailApp.sendEmail(email, "[PickEase] 권한 설정 테스트", "이 메일은 권한 승인을 확인하기 위해 발송되었습니다.");
+    console.log("Gmail Access OK: 테스트 메일 발송 성공 (" + email + ")");
+  } else {
+    console.log("이메일 주소를 가져올 수 없어 메일 발송을 건너뜁니다.");
+  }
+  
+  console.log("모든 권한이 정상적으로 승인되었습니다.");
+}
+
+// ===== 헬퍼 함수 =====
+function getHistorySheet() {
+  return SpreadsheetApp.openById(HISTORY_SPREADSHEET_ID).getSheetByName(HISTORY_SHEET_NAME);
+}
+
+function getUserSheet() {
+  const ss = SpreadsheetApp.openById(USER_SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(USER_SHEET_NAME);
+  if (!sheet) sheet = ss.getSheets()[0];
+  return sheet;
+}
+
+function isAdminUser(userId) {
+  if (!userId) return false;
+  return ADMIN_IDS.indexOf(userId) !== -1;
+}
+
+function hashPassword(password) {
+  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, password);
+  let txtHash = '';
+  for (let i = 0; i < rawHash.length; i++) {
+    let hashVal = rawHash[i];
+    if (hashVal < 0) hashVal += 256;
+    if (hashVal.toString(16).length == 1) txtHash += '0';
+    txtHash += hashVal.toString(16);
+  }
+  return txtHash;
+}
+
+// ===== 인증 및 사용자 관리 =====
+function checkIdExists(userId) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) return true;
+  }
+  return false;
+}
+
+function registerUser(userId, password, nickname, email) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) throw new Error('이미 존재하는 아이디입니다.');
+  }
+  const passwordHash = hashPassword(password);
+  const now = new Date();
+  sheet.appendRow([userId, passwordHash, nickname, now, '', '{}', email]);
+  
+  // 회원가입 축하 이메일 전송
+  const subject = '[PickEase] 회원가입을 환영합니다!';
+  const body = `
+안녕하세요, ${nickname}님.
+
+PickEase에 가입해주셔서 진심으로 감사합니다!
+
+이제 PickEase의 다양한 음식 추천 기능을 이용하실 수 있습니다.
+- 기분과 상황에 맞는 맞춤 음식 추천
+- 과거 기록 기반 개인화된 추천
+- 근처 맛집 찾기
+- AI 챗봇 상담
+
+언제든지 궁금한 점이 있으시면 문의해주세요.
+
+즐거운 식사 되세요! 🍽️
+
+감사합니다.
+PickEase 팀
+  `.trim();
+  
+  try {
+    GmailApp.sendEmail(email, subject, body);
+  } catch (e) {
+    // 이메일 전송 실패해도 회원가입은 성공 처리
+    console.error('회원가입 축하 이메일 전송 실패: ' + e.message);
+  }
+  
+  return { success: true };
+}
+
+function loginUser(userId, password) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  const passwordHash = hashPassword(password);
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) {
+      if (data[i][1] == passwordHash) {
+        sheet.getRange(i + 1, 5).setValue(new Date());
+        return { success: true, userId: userId, nickname: data[i][2], preferences: data[i][5] || '{}' };
+      } else {
+        console.log(`Login Failed for ${userId}: Stored[${data[i][1]}] vs Input[${passwordHash}]`);
+        throw new Error('비밀번호가 일치하지 않습니다.');
+      }
+    }
+  }
+  throw new Error('존재하지 않는 아이디입니다.');
+}
+
+function getUserInfo(userId) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) {
+      return { nickname: data[i][2], preferences: data[i][5] || '{}' };
+    }
+  }
+  throw new Error('사용자 정보를 찾을 수 없습니다.');
+}
+
+function updateUserInfo(userId, nickname, preferencesJson) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) {
+      if (nickname) sheet.getRange(i + 1, 3).setValue(nickname);
+      if (preferencesJson) sheet.getRange(i + 1, 6).setValue(preferencesJson);
+      return { success: true };
+    }
+  }
+  throw new Error('사용자를 찾을 수 없습니다.');
+}
+
+function changePassword(userId, currentPassword, newPassword) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  const currentHash = hashPassword(currentPassword);
+  const newHash = hashPassword(newPassword);
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) {
+      if (data[i][1] == currentHash) {
+        sheet.getRange(i + 1, 2).setValue(newHash);
+        return { success: true };
+      } else {
+        throw new Error('현재 비밀번호가 일치하지 않습니다.');
+      }
+    }
+  }
+  throw new Error('비밀번호 변경 오류');
+}
+
+function deleteAccount(userId) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId) {
+      sheet.deleteRow(i + 1);
+      return { success: true };
+    }
+  }
+  return { success: false };
+}
+
+function resetPassword(userId, email) {
+  const sheet = getUserSheet();
+  const data = sheet.getDataRange().getValues();
+  
+  // 사용자 ID와 이메일 쌍이 존재하는지 확인
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == userId && data[i][6] == email) {
+      // 임시 비밀번호 생성 (영문, 숫자 포함 10자리 - 특수문자 제외)
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let tempPassword = '';
+      for (let j = 0; j < 10; j++) {
+        tempPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
+      // 비밀번호 해시화
+      const tempPasswordHash = hashPassword(tempPassword);
+      
+      // 데이터베이스에 새 비밀번호 저장
+      sheet.getRange(i + 1, 2).setValue(tempPasswordHash);
+      
+      // 이메일 전송
+      const subject = '[PickEase] 임시 비밀번호 안내';
+      const body = `
+안녕하세요, ${data[i][2]}님.
+
+PickEase 비밀번호 찾기 요청이 접수되었습니다.
+
+임시 비밀번호: ${tempPassword}
+
+보안을 위해 로그인 후 즉시 비밀번호를 변경해주시기 바랍니다.
+
+감사합니다.
+PickEase 팀
+      `.trim();
+      
+      try {
+        // GmailApp 사용 (Gmail API 서비스가 추가되어 있어야 함)
+        GmailApp.sendEmail(email, subject, body);
+        return { success: true, message: '임시 비밀번호가 이메일로 전송되었습니다.' };
+      } catch (e) {
+        // 상세 에러 로깅
+        console.error('resetPassword Error: ' + e.toString());
+        // 사용자에게는 구체적인 에러 메시지 전달 (디버깅용)
+        throw new Error('이메일 전송 실패: ' + e.message);
+      }
+    }
+  }
+  
+  throw new Error('아이디와 이메일이 일치하는 계정을 찾을 수 없습니다.');
+}
+
+// ===== 통계 계산 로직 =====
+function updateSessionStats(userId, timestampStr) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  const targetIndices = [];
+  let L = 0, D = 0, S = 0, N = 0;
+  const targetDate = new Date(timestampStr);
+  
+  for (let i = 1; i < data.length; i++) {
+    const rowDate = new Date(data[i][0]);
+    if (data[i][1] === userId && Math.abs(rowDate.getTime() - targetDate.getTime()) < 10000) {
+      targetIndices.push(i + 1);
+      N++;
+      const feedback = data[i][6];
+      const isSaved = data[i][7];
+      if (feedback === '좋아요') L++;
+      if (feedback === '싫어요') D++;
+      if (isSaved === true || isSaved === 'TRUE') S++;
+    }
+  }
+  
+  if (N === 0) return;
+  const F = L + S + D;
+  const denominator = L + (1.5 * S) + D;
+  const rawScore = denominator === 0 ? 0 : (L + (1.5 * S) - D) / denominator;
+  const normalizedScore = (rawScore + 1) / 2;
+  const participationRate = F / N;
+  
+  if (sheet.getLastColumn() < 10) sheet.getRange(1, 10).setValue('피드백 참여율');
+
+  targetIndices.forEach(rowIndex => {
+    sheet.getRange(rowIndex, 9).setValue(normalizedScore);
+    sheet.getRange(rowIndex, 10).setValue(participationRate);
+  });
+}
+
+// ===== 추천 및 이력 기능 =====
+function getUserHistory(userId) {
+  const sheet = getHistorySheet();
+  if (sheet.getLastRow() <= 1) return { liked: {}, disliked: {}, saved: [] };
+  const data = sheet.getDataRange().getValues();
+  const likedFoods = {};
+  const dislikedFoods = {};
+  const savedFoods = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === userId) {
+      const foodName = data[i][4];
+      const feedback = data[i][6];
+      const isSaved = data[i][7];
+      if (feedback === '좋아요') likedFoods[foodName] = (likedFoods[foodName] || 0) + 1;
+      if (feedback === '싫어요') dislikedFoods[foodName] = (dislikedFoods[foodName] || 0) + 1;
+      if ((isSaved === 'TRUE' || isSaved === true) && !savedFoods.includes(foodName)) savedFoods.push(foodName);
+    }
+  }
+  return { liked: likedFoods, disliked: dislikedFoods, saved: savedFoods };
+}
+
+function getSimpleRecommendations(userId, selectedKeywords, customMood, excludeFoods = [], lang = 'ko', additionalRequest = '') {
+  const history = getUserHistory(userId);
+  const userInfo = getUserInfo(userId);
+  const prefs = JSON.parse(userInfo.preferences || '{}');
+  const prefTags = prefs.tags ? prefs.tags.join(', ') : '';
+  const likedEntries = Object.entries(history.liked || {}).map(([food, count]) => `${food}(${count})`);
+  const dislikedEntries = Object.entries(history.disliked || {}).map(([food, count]) => `${food}(${count})`);
+  const dislikedList = Object.keys(history.disliked || {});
+
+  let userInput = selectedKeywords ? selectedKeywords.join(', ') : '';
+  if (customMood) userInput += (userInput ? ', ' : '') + customMood;
+  if (additionalRequest && additionalRequest.trim()) {
+    userInput += (userInput ? ', ' : '') + additionalRequest.trim();
+  }
+
+  const absoluteExclude = [...new Set([...(excludeFoods || []), ...dislikedList])];
+  const likedSummary = likedEntries.length ? likedEntries.join(', ') : '없음';
+  const dislikedSummary = dislikedEntries.length ? dislikedEntries.join(', ') : '없음';
+
+  const langInstruction = lang === 'en' ? "Respond only in English." : "한국어로만 답변해줘.";
+
+  const prompt = buildPickEasePrompt({
+    userInput,
+    prefTags,
+    likedSummary,
+    dislikedSummary,
+    absoluteDislikes: dislikedList,
+    excludeList: absoluteExclude,
+    langInstruction
+  });
+
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  const options = {
+    method: 'POST',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': API_KEY },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', options);
+    const data = JSON.parse(response.getContentText());
+    const content = data.candidates[0].content.parts[0].text;
+    const foods = parseGeminiResponse(content);
+    
+    const sheet = getHistorySheet();
+    const allKeywords = (selectedKeywords || []).slice();
+    if (customMood) allKeywords.push(customMood);
+    if (additionalRequest && additionalRequest.trim()) {
+      allKeywords.push(additionalRequest.trim());
+    }
+    const now = new Date();
+    
+    foods.forEach((food, index) => {
+      sheet.appendRow([now, userId, '간편선택', allKeywords.join(', '), food.name, index + 1, '없음', 'FALSE', 0.5, 0]); 
+    });
+    return { foods: foods };
+  } catch (e) {
+    throw new Error('Recommendation Error: ' + e.message);
+  }
+}
+
+function getRandomRecommendations(userId, excludeFoods = [], lang = 'ko') {
+  const now = new Date();
+  const langInstruction = lang === 'en' ? "Respond only in English." : "한국어로만 답변해줘.";
+  const prompt = (() => {
+    const history = getUserHistory(userId);
+    const userInfo = getUserInfo(userId);
+    const prefs = JSON.parse(userInfo.preferences || '{}');
+    const prefTags = prefs.tags ? prefs.tags.join(', ') : 'None';
+    const likes = Object.entries(history.liked || {}).map(([f, c]) => `${f}(${c})`).join(', ') || 'None';
+    const saved = (history.saved || []).join(', ') || 'None';
+    const dislikes = Object.entries(history.disliked || {}).map(([f, c]) => `${f}(${c})`).join(', ') || 'None';
+    const excluded = [...new Set([...(excludeFoods || []), ...Object.keys(history.disliked || {})])];
+    return `
+User Context:
+- Taste Tags: ${prefTags}
+- Likes: ${likes}
+- Saved: ${saved}
+- Dislikes: ${dislikes}
+- Exclude (must not appear): ${excluded.length ? excluded.join(', ') : 'None'}
+
+Task: Recommend 10 foods that feel random yet aligned with taste.
+- Include 3-5 items inspired by likes/saves or taste tags (fresh twists/variations welcome).
+- Fill the rest with diverse, novel options that still match the overall taste.
+- STRICT: Never include excluded or disliked items.
+- Prefer variety across cuisine, cooking style, and temperature; avoid exact repeats.
+- 10개 모두 다른 음식이어야 한다. 중복 금지.
+- Keep the tone natural. Format as "1. Food - Reason".
+- 형식은 반드시 '1. 음식 - 이유'로, 숫자는 1~10까지 정확히 사용한다.
+${langInstruction}
+`;
+  })();
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  const options = {
+    method: 'POST',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': API_KEY },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+  
+  try {
+    const response = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', options);
+    const data = JSON.parse(response.getContentText());
+    const content = data.candidates[0].content.parts[0].text;
+    const foods = parseGeminiResponse(content);
+    
+    const sheet = getHistorySheet();
+    foods.forEach((food, index) => {
+      sheet.appendRow([now, userId, '랜덤', '', food.name, index + 1, '없음', 'FALSE', 0.5, 0]);
+    });
+    return { foods: foods };
+  } catch(e) {
+    throw new Error('Error');
+  }
+}
+
+function parseGeminiResponse(response) {
+  const lines = response.split('\n').filter(line => line.trim());
+  const foods = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const match = line.match(/^\d+[\.\)]\s*\*?\*?(.+?)\*?\*?\s*[-–—:]\s*(.+)$/);
+    if (match) {
+      foods.push({ name: match[1].trim().replace(/\*\*/g, ''), reason: match[2].trim() });
+    }
+    if (foods.length >= 10) break;
+  }
+  return foods.length > 0 ? foods : [{ name: 'Pizza', reason: 'Failed to parse' }];
+}
+
+function buildPickEasePrompt({ userInput, prefTags, likedSummary, dislikedSummary, absoluteDislikes, excludeList, langInstruction }) {
+  const currentInputText = userInput && userInput.trim() ? userInput.trim() : '사용자 현재 입력 없음';
+  const prefTagText = prefTags && prefTags.trim() ? prefTags : '선택된 태그 없음';
+  const likesText = likedSummary && likedSummary.trim() ? likedSummary : '기록 없음';
+  const dislikesText = dislikedSummary && dislikedSummary.trim() ? dislikedSummary : '기록 없음';
+  const mustNotList = absoluteDislikes && absoluteDislikes.length ? absoluteDislikes.join(', ') : '없음';
+  const excludeText = excludeList && excludeList.length ? excludeList.join(', ') : '없음';
+
+  return `
+# 1. 최우선: 현재 입력 (가장 중요)
+- ${currentInputText}
+
+# 2. 보조적 참고자료: 선호 태그 / 과거 좋아요·싫어요
+- 선호 태그: ${prefTagText}
+- 과거 좋아요 목록: ${likesText}
+- 과거 싫어요 목록: ${dislikesText}
+
+# 3. 절대 금지: 싫어요 음식 및 제외 요청
+- 싫어요 음식: ${mustNotList}
+- 추가 제외 요청: ${excludeText}
+
+Task: Recommend exactly 10 food items based on the above.
+- 최우선으로 현재 입력을 반영하고, 선호/히스토리는 참고만 한다.
+- History는 최대 1~2개 항목만 활용하고, 나머지는 현재 입력 중심으로 다양하게 제안한다.
+- Never recommend disliked or excluded foods.
+- 10개 모두 다른 음식이어야 한다. 중복 금지.
+- 형식은 반드시 '1. 음식 - 이유'로, 숫자는 1~10까지 정확히 사용한다.
+- Don't copy the exact wording from the user input. Reasons must be natural sentences without quotes.
+- If there is no current input, lean more on likes/saves to infer general taste.
+- Lineup according to ranking from 1 to 10 with no missing numbers.
+
+${langInstruction}
+  `.trim();
+}
+
+// ===== 나머지 기존 함수들 (saveFeedback, saveFood, deleteFood, getSavedFoods, getLikedFoods, getDislikedFoods, getHistoryDates, getHistoryByDate, getPerformanceTrendData, findNearbyRestaurants, chatWithAI, getMoodCoachMessage 등) =====
+// ...keep your remaining 3.9.1 implementations below, unchanged...
+
+function parseGeminiResponse(response) {
+  const lines = response.split('\n').filter(line => line.trim());
+  const foods = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const match = line.match(/^\d+[\.\)]\s*\*?\*?(.+?)\*?\*?\s*[-–—:]\s*(.+)$/);
+    if (match) {
+      foods.push({ name: match[1].trim().replace(/\*\*/g, ''), reason: match[2].trim() });
+    }
+    if (foods.length >= 10) break;
+  }
+  return foods.length > 0 ? foods : [{ name: 'Pizza', reason: 'Failed to parse' }];
+}
+
+function saveFeedback(userId, foodName, feedback) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  let targetTimestamp = null;
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === userId && data[i][4] === foodName) {
+      sheet.getRange(i + 1, 7).setValue(feedback);
+      targetTimestamp = data[i][0];
+      break;
+    }
+  }
+  if (targetTimestamp) {
+    updateSessionStats(userId, targetTimestamp);
+    return { success: true };
+  }
+  return { success: false };
+}
+
+function saveFood(userId, foodName) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  let targetTimestamp = null;
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === userId && data[i][4] === foodName) {
+      sheet.getRange(i + 1, 8).setValue('TRUE');
+      targetTimestamp = data[i][0];
+      break;
+    }
+  }
+  if (targetTimestamp) {
+    updateSessionStats(userId, targetTimestamp);
+    return { success: true };
+  }
+  return { success: false };
+}
+
+function deleteFood(userId, foodName, type) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  let targetTimestamp = null;
+  for (let i = data.length - 1; i >= 1; i--) {
+    if (data[i][1] === userId && data[i][4] === foodName) {
+      if (type === 'saved') sheet.getRange(i + 1, 8).setValue('FALSE');
+      else if (type === 'liked' || type === 'disliked') sheet.getRange(i + 1, 7).setValue('없음');
+      targetTimestamp = data[i][0];
+      break; 
+    }
+  }
+  if (targetTimestamp) {
+    updateSessionStats(userId, targetTimestamp);
+    return { success: true };
+  }
+  return { success: true };
+}
+
+function getSavedFoods(userId) { return getFoodsByType(userId, 'saved'); }
+function getLikedFoods(userId) { return getFoodsByType(userId, 'liked'); }
+function getDislikedFoods(userId) { return getFoodsByType(userId, 'disliked'); }
+
+function getFoodsByType(userId, type) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  const foods = new Set();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === userId) {
+      const foodName = data[i][4], feedback = data[i][6], isSaved = data[i][7];
+      if (type === 'saved' && (isSaved === true || isSaved === 'TRUE')) foods.add(foodName);
+      else if (type === 'liked' && feedback === '좋아요') foods.add(foodName);
+      else if (type === 'disliked' && feedback === '싫어요') foods.add(foodName);
+    }
+  }
+  return Array.from(foods);
+}
+
+function getHistoryDates(userId) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  const dates = new Set();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === userId) {
+      const dateObj = new Date(data[i][0]);
+      if (!isNaN(dateObj)) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        dates.add(`${y}-${m}-${d}`);
+      }
+    }
+  }
+  return Array.from(dates);
+}
+
+function getHistoryByDate(userId, dateStr) {
+  const sheet = getHistorySheet();
+  const data = sheet.getDataRange().getValues();
+  const items = [];
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][1] === userId) {
+      const dateObj = new Date(data[i][0]);
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      const currentStr = `${y}-${m}-${d}`;
+      
+      if (currentStr === dateStr) {
+        const feedback = data[i][6];
+        const isSaved = data[i][7];
+        const inputVal = data[i][3] ? data[i][3] : (data[i][2] === '간편선택' ? '간편한 선택' : '');
+        items.push({
+          name: data[i][4],
+          rank: data[i][5],
+          isLiked: feedback === '좋아요',
+          isDisliked: feedback === '싫어요',
+          isSaved: isSaved === true || isSaved === 'TRUE',
+          input: inputVal
+        });
+      }
+    }
+  }
+  return items;
+}
+
+function getPerformanceTrendData(adminUserId, targetUserId) {
+  if (!isAdminUser(adminUserId)) throw new Error('권한이 없습니다.');
+  const sheet = getHistorySheet();
+  if (sheet.getLastRow() <= 1) return { trend: [], users: [] };
+  const data = sheet.getDataRange().getValues();
+  const sessionMap = {};
+  const normalizedTarget = targetUserId && targetUserId !== 'ALL' ? targetUserId : null;
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const userId = row[1];
+    const timestamp = row[0];
+    const metricValue = row[8];
+    if (!userId || (normalizedTarget && userId !== normalizedTarget)) continue;
+    if (metricValue === '' || metricValue === null || metricValue === undefined) continue;
+    const timeValue = new Date(timestamp).getTime();
+    if (isNaN(timeValue)) continue;
+    const key = `${userId}|${timeValue}`;
+    if (!sessionMap[key]) {
+      const numericMetric = Number(metricValue);
+      if (isNaN(numericMetric)) continue;
+      sessionMap[key] = { userId, time: timeValue, metric: numericMetric };
+    }
+  }
+
+  const userSessions = {};
+  Object.values(sessionMap).forEach(session => {
+    if (!userSessions[session.userId]) userSessions[session.userId] = [];
+    userSessions[session.userId].push(session);
+  });
+
+  const userList = Object.keys(userSessions).map(uid => ({
+    userId: uid,
+    attempts: userSessions[uid].length
+  })).sort((a, b) => a.userId.localeCompare(b.userId));
+
+  const sessionArrays = normalizedTarget
+    ? (userSessions[normalizedTarget] ? [userSessions[normalizedTarget]] : [])
+    : Object.values(userSessions);
+  if (sessionArrays.length === 0) return { trend: [], users: userList };
+  sessionArrays.forEach(list => list.sort((a, b) => a.time - b.time));
+
+  let maxAttempts = 0;
+  sessionArrays.forEach(list => {
+    if (list.length > maxAttempts) maxAttempts = list.length;
+  });
+
+  const trend = [];
+  const cumulativeTrend = [];
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let sum = 0;
+    let count = 0;
+    sessionArrays.forEach(list => {
+      const entry = list[attempt - 1];
+      if (entry && !isNaN(entry.metric)) {
+        sum += entry.metric;
+        count++;
+      }
+    });
+    if (count > 0) {
+      const avg = sum / count;
+      trend.push({ attempt: attempt, average: avg, count: count });
+      const prev = cumulativeTrend[cumulativeTrend.length - 1];
+      const cumAvg = prev ? ((prev.average * prev.count) + (avg * count)) / (prev.count + count) : avg;
+      cumulativeTrend.push({ attempt: attempt, average: cumAvg, count: (prev ? prev.count : 0) + count });
+    }
+  }
+
+  return { trend: trend, cumulativeTrend: cumulativeTrend, users: userList };
+}
+
+// ===== 맛집 검색 (Google Maps Grounding) =====
+function findNearbyRestaurants(foodName, locationData, lang = 'ko') {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  
+  const langInstruction = lang === 'en' ? "Respond only in English." : "한국어로만 답변해줘.";
+  
+  let prompt = `Find 3-5 highly rated ${foodName} restaurants `;
+  if (locationData.lat && locationData.lng) {
+    prompt += `near coordinates (${locationData.lat}, ${locationData.lng}). `;
+  } else if (locationData.query) {
+    prompt += `near ${locationData.query}. `;
+  } else {
+    prompt += "nearby. ";
+  }
+  
+  prompt += `
+    ${langInstruction}
+    
+    **CRITICAL REQUIREMENTS:**
+    - You MUST use ONLY real restaurant data from Google Maps Grounding. Do NOT invent or create fictional restaurants.Doublecheck if there exist now.
+    - Only return restaurants that actually exist in Google Maps.
+    - If you cannot find enough real restaurants, return fewer results rather than making up fake ones.
+    - All restaurant names, ratings, and summaries must be based on actual Google Maps data.
+    - Nearby means not far than 2km.
+    
+    Return the result ONLY in the following JSON format:
+    [
+      {
+        "name": "Restaurant Name",
+        "rating": 4.5,
+        "summary": "Brief summary of why it is good."
+      },
+      ...
+    ]
+    Do not include markdown formatting (like \`\`\`json). Just raw JSON array.
+  `;
+
+  const payload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    tools: [{ googleMaps: {} }]
+  };
+
+  const options = {
+    method: 'POST',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': API_KEY },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+       const text = data.candidates[0].content.parts.map(p => p.text).join('');
+       const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+       return { text: cleanedText };
+    } else {
+      return { text: "[]" }; 
+    }
+  } catch (e) {
+    return { text: JSON.stringify([{ name: "Error", rating: 0, summary: e.message }]) };
+  }
+}
+
+// ===== AI 챗봇 (Gemini 3 Pro) =====
+function chatWithAI(message) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent'; // gemini-3-pro-preview 사용
+  
+  const payload = {
+    contents: [{ parts: [{ text: message }] }]
+  };
+
+  const options = {
+    method: 'POST',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': API_KEY },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    const data = JSON.parse(response.getContentText());
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      return { text: data.candidates[0].content.parts[0].text };
+    }
+    return { text: "죄송해요, 답변을 생성하지 못했습니다." };
+  } catch (e) {
+    return { text: "오류가 발생했습니다: " + e.message };
+  }
+}
+
+// ===== AI Mood Coach =====
+function getMoodCoachMessage(selectedKeywords, customMood, lang = 'ko') {
+  const langInstruction = lang === 'en' ? "Respond only in English." : "한국어로만 답변해줘.";
+  
+  let userInput = selectedKeywords ? selectedKeywords.join(', ') : '';
+  if (customMood) userInput += (userInput ? ', ' : '') + customMood;
+  
+  if (!userInput.trim()) {
+    return { text: lang === 'ko' ? '오늘도 좋은 하루 보내세요! 😊' : 'Have a great day! 😊' };
+  }
+  
+  const prompt = `
+    User's current mood/input: ${userInput}
+    
+    Task: As a warm and empathetic mood coach, provide a brief, encouraging message (1-2 sentences) based on the user's input.
+    - Be supportive and understanding
+    - Keep it short and genuine
+    - Don't mention food recommendations
+    - Focus on emotional support
+    
+    ${langInstruction}
+  `;
+
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  const options = {
+    method: 'POST',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': API_KEY },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', options);
+    const data = JSON.parse(response.getContentText());
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      return { text: data.candidates[0].content.parts[0].text.trim() };
+    }
+    return { text: lang === 'ko' ? '오늘도 좋은 하루 보내세요! 😊' : 'Have a great day! 😊' };
+  } catch (e) {
+    return { text: lang === 'ko' ? '오늘도 좋은 하루 보내세요! 😊' : 'Have a great day! 😊' };
+  }
+}
