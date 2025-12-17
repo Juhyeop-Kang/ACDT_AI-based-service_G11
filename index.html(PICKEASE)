@@ -1,0 +1,2608 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PickEase</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#3182f6",
+            "primary-hover": "#1b64da",
+            "background-light": "#F8F9FA",
+            "background-dark": "#111827",
+            "text-light": "#191F28",
+            "text-dark": "#F9FAFB",
+          },
+          fontFamily: { "display": ["Manrope", "Noto Sans KR", "sans-serif"] },
+        },
+      },
+    }
+  </script>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Manrope', 'Noto Sans KR', sans-serif;
+      overflow-y: scroll;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0;
+      transition: 0.2s;
+    }
+
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+      will-change: opacity;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes boing {
+      0% {
+        transform: scale(1);
+      }
+
+      30% {
+        transform: scale(1.35);
+      }
+
+      40% {
+        transform: scale(0.85);
+      }
+
+      50% {
+        transform: scale(1.15);
+      }
+
+      65% {
+        transform: scale(0.95);
+      }
+
+      75% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .animate-boing {
+      animation: boing 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #CBD5E1;
+      border-radius: 3px;
+    }
+
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #4B5563;
+    }
+
+    .logo-light {
+      display: block;
+    }
+
+    .logo-dark {
+      display: none;
+    }
+
+    .dark .logo-light {
+      display: none;
+    }
+
+    .dark .logo-dark {
+      display: block;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+
+    @keyframes slideLeft {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes keywordSelect {
+      0% {
+        background-color: rgba(255, 255, 255, 1);
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.15);
+      }
+      100% {
+        background-color: rgb(49, 130, 246);
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes keywordFlow {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(calc(-100vw - 200px));
+      }
+    }
+
+    @keyframes keywordRiseUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes keywordFillDown {
+      from {
+        transform: translateY(-10px);
+        opacity: 0.7;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes jellyClick {
+      0% {
+        transform: scale(1);
+      }
+      30% {
+        transform: scale(1.3);
+      }
+      50% {
+        transform: scale(0.9);
+      }
+      70% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .keyword-rise-up {
+      animation: keywordRiseUp 0.6s ease-out forwards;
+    }
+
+    .keyword-fill-down {
+      animation: keywordFillDown 0.4s ease-out forwards;
+    }
+
+    .jelly-click {
+      animation: jellyClick 0.5s ease-out;
+    }
+
+    .keyword-flow {
+      animation: keywordFlow 20s linear infinite;
+    }
+
+    .slide-up-animation {
+      animation: slideUp 0.8s ease-out forwards;
+    }
+
+    .slide-up-hidden {
+      opacity: 0;
+      transform: translateY(100px);
+    }
+
+    @keyframes titleFadeIn {
+      from {
+        opacity: 0;
+        filter: brightness(0.5);
+      }
+      to {
+        opacity: 1;
+        filter: brightness(1);
+      }
+    }
+
+    .title-fade-in {
+      animation: titleFadeIn 1s ease-out forwards;
+    }
+
+    .title-hidden {
+      opacity: 0;
+      filter: brightness(0.5);
+    }
+
+    .animate-fade-in-delayed {
+      animation: titleFadeIn 1s ease-out forwards;
+      opacity: 0;
+      filter: brightness(0.5);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes modalSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-backdrop {
+      animation: modalFadeIn 0.3s ease-out forwards;
+    }
+
+    .modal-content {
+      animation: modalSlideUp 0.3s ease-out forwards;
+    }
+
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .animate-slide-left {
+      animation: slideLeft 0.8s ease-out forwards;
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.8s ease-out forwards;
+    }
+
+    .animate-slide-in-right {
+      animation: slideInRight 0.8s ease-out forwards;
+    }
+
+    .animate-pulse-click {
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    .section-hidden {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .section-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .gradient-overlay {
+      background: linear-gradient(to bottom, transparent, rgba(49, 130, 246, 0.1), transparent);
+    }
+  </style>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body
+  class="font-display bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-300">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useCallback, useEffect, useRef, useMemo } = React;
+    const isGAS = typeof window !== 'undefined' && window.google && window.google.script;
+    const mockDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    const runGAS = (func, ...args) => new Promise((resolve, reject) => {
+      if (!isGAS) return reject('Not in GAS');
+      window.google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[func](...args);
+    });
+
+    const api = {
+      checkIdExists: (id) => isGAS ? runGAS('checkIdExists', id) : mockDelay(500).then(() => id === 'exists'),
+      login: (id, pw) => isGAS ? runGAS('loginUser', id, pw) : mockDelay(500).then(() => ({ success: true, userId: id, nickname: 'Mock' })),
+      register: (id, pw, nick, email) => isGAS ? runGAS('registerUser', id, pw, nick, email) : Promise.resolve({ success: true }),
+      resetPassword: (id, email) => isGAS ? runGAS('resetPassword', id, email) : mockDelay(1000).then(() => ({ success: true, message: '임시 비밀번호가 이메일로 전송되었습니다.' })),
+      getUserInfo: (id) => isGAS ? runGAS('getUserInfo', id) : Promise.resolve({ nickname: 'Mock', preferences: '{}' }),
+      updateUserInfo: (id, nick, pref) => isGAS ? runGAS('updateUserInfo', id, nick, pref) : Promise.resolve({ success: true }),
+      changePassword: (id, cur, newPw) => isGAS ? runGAS('changePassword', id, cur, newPw) : Promise.resolve({ success: true }),
+      deleteAccount: (id) => isGAS ? runGAS('deleteAccount', id) : Promise.resolve({ success: true }),
+      getSimpleRecommendations: (id, k, m, ex, lang, add) => isGAS ? runGAS('getSimpleRecommendations', id, k, m, ex, lang, add || '') : mockDelay(1000).then(() => ({ foods: [{ name: 'Pizza', reason: 'Yum' }] })),
+      getRandomRecommendations: (id, ex, lang) => isGAS ? runGAS('getRandomRecommendations', id, ex, lang) : mockDelay(1000).then(() => ({ foods: [{ name: 'Burger', reason: 'Good' }] })),
+      saveFeedback: (id, f, fb) => runGAS('saveFeedback', id, f, fb),
+      saveFood: (id, f) => runGAS('saveFood', id, f),
+      deleteFood: (id, f, t) => runGAS('deleteFood', id, f, t),
+      getSavedFoods: (id) => runGAS('getSavedFoods', id),
+      getLikedFoods: (id) => runGAS('getLikedFoods', id),
+      getDislikedFoods: (id) => runGAS('getDislikedFoods', id),
+      getHistoryDates: (id) => isGAS ? runGAS('getHistoryDates', id) : Promise.resolve(['2023-10-01']),
+      getHistoryByDate: (id, d) => isGAS ? runGAS('getHistoryByDate', id, d) : Promise.resolve([{ name: 'Test Food', rank: 1, isLiked: true, isDisliked: false, isSaved: false, input: 'Spicy' }]),
+      findNearbyRestaurants: (food, loc, lang) => isGAS ? runGAS('findNearbyRestaurants', food, loc, lang) : mockDelay(1500).then(() => ({ text: '[{"name":"Mock Rest","rating":4.5,"summary":"Good food"}]' })),
+      chatWithAI: (msg) => isGAS ? runGAS('chatWithAI', msg) : mockDelay(1000).then(() => ({ text: "AI 답변 예시입니다." })),
+      getMoodCoachMessage: (k, m, lang) => isGAS ? runGAS('getMoodCoachMessage', k, m, lang) : mockDelay(800).then(() => ({ text: lang === 'ko' ? '오늘도 좋은 하루 보내세요! 😊' : 'Have a great day! 😊' })),
+      getPerformanceTrendData: (id, target) => isGAS ? runGAS('getPerformanceTrendData', id, target || '') : Promise.resolve({ trend: [{ attempt: 1, average: 0.6 }, { attempt: 2, average: 0.7 }, { attempt: 3, average: 0.68 }], cumulativeTrend: [{ attempt: 1, average: 0.6, count: 1 }, { attempt: 2, average: 0.65, count: 2 }], users: [{ userId: 'demo', attempts: 3 }] }),
+    };
+
+    const TEXT = {
+      ko: {
+        login: "로그인", id: "아이디", pw: "비밀번호", signup: "회원가입", noAccount: "계정이 없으신가요?", signupTitle: "회원가입", email: "이메일", idFree: "아이디", nick: "닉네임", privacy: "[필수] 개인정보 처리 방침을 모두 읽고 이해하였으며 이에 동의합니다.", cancel: "취소", next: "다음", welcome: "환영합니다!", welcomeSub: "PickEase에 오신 것을 환영합니다. 시작해볼까요?", prefTitle: "당신의 입맛을 알려주시면 더 잘 추천해드릴 수 있어요. (선택)", saveStart: "저장하고 시작하기", later: "나중에 하기", hello: "반갑습니다", newChoice: "새로운 선택", simpleChoice: "간편한 선택", newDesc: "기분과 상황에 맞춰 메뉴 추천하기", simpleDesc: "취향 기반 빠른 추천", howAreYou: "당신의 오늘을 알려주세요 💛", howAreYouSit: "어떤 하루를 보내고 오셨나요? 😊", recommend: "추천받기", results: "추천 결과", findRes: "근처 맛집 찾기", refresh: "다른 음식 추천받기", settings: "설정", myAccount: "내 계정", history: "나의 추천 기록", activity: "내 활동", logout: "로그아웃", close: "닫기", darkMode: "다크 모드", profile: "프로필/취향", changePw: "비밀번호 변경", danger: "탈퇴", findPassword: "비밀번호 찾기", findPasswordTitle: "비밀번호 찾기", findPasswordDesc: "가입하신 아이디와 이메일을 입력해주세요.\n임시 비밀번호가 이메일로 전송됩니다.", findPasswordSuccess: "임시 비밀번호가 이메일로 전송되었습니다.\n이메일을 확인해주세요.", findPasswordError: "아이디와 이메일이 일치하는 계정을 찾을 수 없습니다.",
+        likedItems: "좋아요", disliked: "싫어요", saved: "저장됨", empty: "항목이 없습니다.", loading: "맞춤 음식을 찾고 있어요...", customPlace: "지금, 가장 필요한 걸 알려줄래요?", locationPrompt: "어디서 찾으시나요? (예: 강남역)", save: "저장하기", change: "변경하기", deleteAcc: "계정 삭제", currentPw: "현재 비밀번호", newPw: "새 비밀번호", tagTitle: "내 취향 태그", dangerDesc: "탈퇴 시 모든 데이터가 삭제됩니다.", checkId: "중복확인", idAvail: "사용 가능한 아이디입니다.", idTaken: "이미 사용 중인 아이디입니다.", pwRule: "영문, 숫자, 특수문자 조합 8자 이상", req: "필수 입력 항목입니다.", start: "시작하기", noRecDay: "이 날은 기록이 없어요.", noRecToday: "아직 추천을 받지 않으셨네요! 추천을 시작해볼까요?", startRec: "추천 시작하기", simpleInput: "간편한 선택", fetching: "정보를 불러오고 있어요...",
+        locAsk: "위치 확인", locPrompt: "현재 위치를 사용하여 맛집을 찾을까요?\n취소 시 지역명을 직접 입력할 수 있습니다.", locInputPrompt: "찾으시는 지역을 입력해주세요 (예: 강남역)", searching: "주변 맛집을 찾고 있어요...", searchResult: "주변 맛집 결과",
+        locAgree: "위치 정보 제공 동의 (선택)", locAgreeDesc: "근처 맛집 추천에 사용됩니다. 내 계정에서 변경 가능합니다.", allowLoc: "위치 정보 제공", locCheckTitle: "어디서 찾을까요?", locCurrent: "현재 위치로 찾기", locManual: "직접 입력하기", locManualInput: "지역 입력 (예: 강남역)", search: "검색", chatTitle: "AI 챗봇", chatInput: "무엇이든 물어보세요...",
+        adminDashboard: "관리자 대시보드", perfTrendTitle: "성능 지표 추이", perfTrendDesc: "추천 회차별 평균 성능 지표를 확인하세요.", perfTrendLoading: "성능 데이터를 불러오는 중입니다...", perfTrendEmpty: "아직 충분한 데이터가 없습니다.", perfAttemptAxis: "추천 회차", perfValueAxis: "평균 성능 지표", perfValueAxisSingle: "성능 지표", perfDatasetLabel: "평균 성능", perfSelectUser: "사용자 선택", perfAllUsers: "전체 평균", perfAttemptInfo: "총 {count}회 추천",
+        submitting: "승인 중...",
+        allergiesLabel: "알레르기", allergiesPlaceholder: "예: 땅콩, 새우, 우유 등 (없으면 입력하지 않아도 됩니다)", customPreferencesLabel: "추가 취향 및 선호사항", customPreferencesPlaceholder: "자유롭게 작성해주세요. 예: 매운 음식은 잘 못 먹어요, 저녁에는 가벼운 음식을 선호해요 등", optional: "선택",
+        privacyShow: "개인정보 처리방침 자세히 보기", privacyHide: "개인정보 처리방침 접기",
+        privacyTitle1: "1. 아이디 수집 및 이용 목적",
+        privacyContent1: "• 계정 식별 및 본인 확인\n• 로그인 인증을 통한 서비스 이용\n• 서비스 이용 내역 추적 및 관리\n• 중복 가입 방지\n• 사용자별 맞춤 추천 제공\n• 통계 분석 및 서비스 개선\n\n아이디는 회원 식별을 위한 고유 식별자로 사용되며, 다른 사용자와 구분하기 위한 목적으로만 사용됩니다.",
+        privacyTitle2: "2. 비밀번호 수집 및 이용 목적",
+        privacyContent2: "• 계정 보안 및 접근 제어\n• 본인 인증을 통한 무단 접근 방지\n• 사용자 데이터 보호\n• 계정 도용 및 부정 사용 방지\n\n비밀번호는 SHA-256 해시 알고리즘을 사용하여 암호화되어 저장되며, 원본 비밀번호는 저장하지 않습니다. 비밀번호는 서비스 운영진을 포함하여 어떠한 방법으로도 확인할 수 없습니다.",
+        privacyTitle3: "3. 이메일 수집 및 이용 목적",
+        privacyContent3: "• 회원가입 축하 및 환영 메일 발송\n• 비밀번호 찾기 시 임시 비밀번호 전송\n• 중요 공지사항 및 서비스 변경 사항 안내\n• 계정 보안 관련 알림 (로그인 알림 등)\n• 서비스 이용 관련 중요 정보 전달\n\n이메일은 오직 PickEase 서비스 이용을 위한 필수적인 통신 수단으로만 사용되며, 마케팅 및 광고 목적으로는 사용되지 않습니다.",
+        privacyTitle4: "4. 개인정보 보호 및 보안 조치",
+        privacyContent4: "• 비밀번호는 SHA-256 해시 알고리즘으로 단방향 암호화되어 저장됩니다.\n• 개인정보는 Google Apps Script의 보안 시스템 내에서 안전하게 관리됩니다.\n• 데이터는 Google Spreadsheet에 암호화된 형태로 저장되며, 접근 권한은 제한됩니다.\n• 정기적인 보안 점검 및 취약점 검사를 실시합니다.\n• 개인정보는 본인의 동의 없이 제3자에게 제공되지 않습니다.\n• 법적 요구사항이 있는 경우를 제외하고, 개인정보는 원칙적으로 외부에 공개되지 않습니다.",
+        privacyTitle5: "5. 개인정보 보관 기간 및 삭제",
+        privacyContent5: "• 회원가입 시 수집된 개인정보는 회원 탈퇴 시까지 보관됩니다.\n• 회원 탈퇴 시 모든 개인정보는 즉시 삭제되며, 복구할 수 없습니다.\n• 탈퇴 시 음식 추천 기록, 좋아요/싫어요 기록, 저장된 음식 목록 등 모든 데이터가 함께 삭제됩니다.\n• 법적 의무가 있는 경우 해당 기간 동안 보관될 수 있습니다.",
+        prefTags: {
+          "매운거 좋아함": "매운거 좋아함",
+          "달달한거 선호": "달달한거 선호",
+          "한식파": "한식파",
+          "일식파": "일식파",
+          "양식파": "양식파",
+          "중식파": "중식파",
+          "고기 필수": "고기 필수",
+          "채식 선호": "채식 선호",
+          "면 요리 좋아함": "면 요리 좋아함",
+          "밥심": "밥심"
+        },
+        prefTagKeys: ["매운거 좋아함", "달달한거 선호", "한식파", "일식파", "양식파", "중식파", "고기 필수", "채식 선호", "면 요리 좋아함", "밥심"]
+      },
+      en: {
+        login: "Login", id: "ID", pw: "Password", signup: "Sign Up", noAccount: "No account?", signupTitle: "Sign Up", email: "Email", idFree: "ID", nick: "Nickname", privacy: "[Required] I have read and understood the Privacy Policy and agree to it.", cancel: "Cancel", next: "Next", welcome: "Welcome!", welcomeSub: "Welcome to PickEase. Let's start!", prefTitle: "Tell us your taste for better recommendations (Optional)", saveStart: "Save & Start", later: "Skip", hello: "Welcome back", newChoice: "New Choice", simpleChoice: "Easy Choice", newDesc: "Recommend based on mood & context", simpleDesc: "Quick recommend based on taste", howAreYou: "How is your day today? 💛", howAreYouSit: "How was your day? 😊", recommend: "Recommend", results: "Results", findRes: "Find nearby restaurants", refresh: "Get other recommendations", settings: "Settings", myAccount: "My Account", history: "Recommendation History", activity: "My Activity", logout: "Log Out", close: "Close", darkMode: "Dark Mode", profile: "Profile/Taste", changePw: "Change Password", danger: "Delete Account", likedItems: "Liked", disliked: "Disliked", saved: "Saved", empty: "No items found.", loading: "Finding perfect food...", customPlace: "What do you need right now?", locationPrompt: "Where do you want to search? (e.g., Gangnam Station)", save: "Save", change: "Change", deleteAcc: "Delete Account", currentPw: "Current Password", newPw: "New Password", tagTitle: "My Taste Tags", dangerDesc: "All data will be deleted upon deletion.", checkId: "Check", idAvail: "ID Available", idTaken: "ID Taken", pwRule: "8+ chars, letter+number+symbol", req: "Required", start: "Start", noRecDay: "No records for this day.", noRecToday: "No recommendations yet today! Shall we start?", startRec: "Start", simpleInput: "Simple Choice", fetching: "Loading info...", findPassword: "Forgot Password?", findPasswordTitle: "Forgot Password", findPasswordDesc: "Enter your ID and email address.\nA temporary password will be sent to your email.", findPasswordSuccess: "A temporary password has been sent to your email.\nPlease check your email.", findPasswordError: "No account found with matching ID and email.",
+        locAgree: "Allow Location (Optional)", locAgreeDesc: "Used for nearby restaurants. Can be changed in My Account.", allowLoc: "Allow Location", locCheckTitle: "Where to search?", locCurrent: "Use Current Location", locManual: "Enter Manually", locManualInput: "Enter location (e.g. Gangnam)", search: "Search", searching: "Searching restaurants...", chatTitle: "AI Chatbot", chatInput: "Ask anything...",
+        adminDashboard: "Admin Dashboard", perfTrendTitle: "Performance Trend", perfTrendDesc: "Track the average metric per recommendation attempt.", perfTrendLoading: "Loading performance data...", perfTrendEmpty: "No aggregated data yet.", perfAttemptAxis: "Attempt #", perfValueAxis: "Average Metric", perfValueAxisSingle: "Performance Metric", perfDatasetLabel: "Average Performance", perfSelectUser: "Select User", perfAllUsers: "All Users", perfAttemptInfo: "{count} attempts total",
+        submitting: "Submitting...",
+        allergiesLabel: "Allergies", allergiesPlaceholder: "e.g., peanuts, shrimp, milk, etc. (leave blank if none)", customPreferencesLabel: "Additional Preferences", customPreferencesPlaceholder: "Please write freely. e.g., I can't handle spicy food well, I prefer light meals in the evening, etc.", optional: "Optional",
+        privacyShow: "View Privacy Policy Details", privacyHide: "Hide Privacy Policy",
+        privacyTitle1: "1. ID Collection and Usage Purpose",
+        privacyContent1: "• Account identification and identity verification\n• Service access through login authentication\n• Tracking and management of service usage history\n• Prevention of duplicate registrations\n• Personalized recommendations for each user\n• Statistical analysis and service improvement\n\nYour ID is used solely as a unique identifier for member identification and to distinguish you from other users.",
+        privacyTitle2: "2. Password Collection and Usage Purpose",
+        privacyContent2: "• Account security and access control\n• Prevention of unauthorized access through identity verification\n• Protection of user data\n• Prevention of account theft and fraudulent use\n\nPasswords are encrypted and stored using the SHA-256 hash algorithm, and the original password is never stored. Passwords cannot be viewed by anyone, including service administrators, through any means.",
+        privacyTitle3: "3. Email Collection and Usage Purpose",
+        privacyContent3: "• Sending welcome and congratulatory emails upon registration\n• Sending temporary passwords for password recovery\n• Notification of important announcements and service changes\n• Security-related account notifications (login alerts, etc.)\n• Delivery of important information related to service usage\n\nEmail is used only as an essential means of communication for using PickEase services and is not used for marketing or advertising purposes.",
+        privacyTitle4: "4. Personal Information Protection and Security Measures",
+        privacyContent4: "• Passwords are stored encrypted using SHA-256 hash algorithm for one-way encryption.\n• Personal information is securely managed within Google Apps Script's security system.\n• Data is stored in encrypted form in Google Spreadsheet with restricted access rights.\n• Regular security inspections and vulnerability assessments are conducted.\n• Personal information is not provided to third parties without your consent.\n• Except when legally required, personal information is not disclosed to external parties.",
+        privacyTitle5: "5. Personal Information Retention Period and Deletion",
+        privacyContent5: "• Personal information collected upon registration is retained until membership withdrawal.\n• Upon membership withdrawal, all personal information is immediately deleted and cannot be recovered.\n• Upon withdrawal, all data including food recommendation history, likes/dislikes records, and saved food lists are deleted together.\n• Information may be retained for the period required by legal obligations.",
+        prefTags: {
+          "매운거 좋아함": "Love Spicy Food",
+          "달달한거 선호": "Prefer Sweet",
+          "한식파": "Korean Food Lover",
+          "일식파": "Japanese Food Lover",
+          "양식파": "Western Food Lover",
+          "중식파": "Chinese Food Lover",
+          "고기 필수": "Meat Essential",
+          "채식 선호": "Prefer Vegetarian",
+          "면 요리 좋아함": "Love Noodles",
+          "밥심": "Rice Lover"
+        },
+        prefTagKeys: ["매운거 좋아함", "달달한거 선호", "한식파", "일식파", "양식파", "중식파", "고기 필수", "채식 선호", "면 요리 좋아함", "밥심"]
+      }
+    };
+
+    const ADMIN_IDS = ['manager'];
+
+    // ... (LoginScreen, SignupScreen, SignupOptionalScreen, WelcomeScreen, MyAccountScreen, MainScreen, MoodSelectionScreen, SettingsModal are same) ...
+    // To save space, assume they are included here as in previous response. I will only output updated components.
+
+    const FoodCard = ({ food, idx, shouldAnimate, shouldLike, shouldSave, clickDelay }) => {
+      const [isLiked, setIsLiked] = useState(false);
+      const [isSaved, setIsSaved] = useState(false);
+      const [clickedButton, setClickedButton] = useState(null);
+      
+      useEffect(() => {
+        if (shouldAnimate && clickDelay > 0) {
+          const timer = setTimeout(() => {
+            if (shouldLike) {
+              setIsLiked(true);
+              setClickedButton('like');
+              setTimeout(() => setClickedButton(null), 500);
+            } else if (shouldSave) {
+              setIsSaved(true);
+              setClickedButton('save');
+              setTimeout(() => setClickedButton(null), 500);
+            }
+          }, clickDelay * 1000);
+          
+          return () => clearTimeout(timer);
+        }
+      }, [shouldAnimate, shouldLike, shouldSave, clickDelay]);
+      
+      return (
+        <div
+          className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 ${
+            shouldAnimate ? 'slide-up-animation' : 'slide-up-hidden'
+          }`}
+          style={{ animationDelay: `${idx * 0.3}s` }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{food.name}</h3>
+              <p className="text-gray-600 dark:text-gray-300">{food.reason}</p>
+            </div>
+            <div className="flex items-center gap-4 ml-4">
+              {/* 좋아요 버튼 - 기호만 */}
+              <button
+                className="flex items-center justify-center transition-all p-2"
+              >
+                <span className={`material-symbols-outlined text-3xl transition-all ${
+                  isLiked ? 'fill-icon text-red-600 dark:text-red-400' : 'text-gray-400'
+                } ${clickedButton === 'like' ? 'jelly-click' : ''}`}>
+                  favorite
+                </span>
+              </button>
+              {/* 싫어요 버튼 - 기호만 */}
+              <button
+                className="flex items-center justify-center transition-all p-2"
+              >
+                <span className="material-symbols-outlined text-3xl text-gray-400">
+                  thumb_down
+                </span>
+              </button>
+              {/* 저장 버튼 - 기호만 */}
+              <button
+                className="flex items-center justify-center transition-all p-2"
+              >
+                <span className={`material-symbols-outlined text-3xl transition-all ${
+                  isSaved ? 'fill-icon text-gray-900 dark:text-gray-100' : 'text-gray-400'
+                } ${clickedButton === 'save' ? 'jelly-click' : ''}`}>
+                  bookmark
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const LoginScreen = ({ onLogin, onGoSignup, onFindPassword, lang, setLang, onNavigate, isLoggedInProp, loggedInUserIdProp }) => {
+      const t = TEXT[lang];
+      const [userId, setUserId] = useState('');
+      const [password, setPassword] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [showLoginModal, setShowLoginModal] = useState(false);
+      const [isLoggedIn, setIsLoggedIn] = useState(isLoggedInProp || false);
+      const [loggedInUserId, setLoggedInUserId] = useState(loggedInUserIdProp || '');
+      const [loggedInNick, setLoggedInNick] = useState('');
+      const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+      const [visibleSections, setVisibleSections] = useState(new Set());
+      const [animatedSections, setAnimatedSections] = useState(new Set());
+      const [bottomVisibleSections, setBottomVisibleSections] = useState(new Set());
+      const sectionRefs = useRef({});
+      const bottomMarkerRefs = useRef({});
+      
+      const handleLogin = async () => {
+        if (!userId.trim() || !password.trim()) { setError(t.req); return; }
+        setIsLoading(true); setError('');
+        try {
+          const res = await api.login(userId, password);
+          setIsLoggedIn(true);
+          setLoggedInUserId(res.userId);
+          setLoggedInNick(res.nickname);
+          setUserId('');
+          setPassword('');
+          setShowLoginModal(false);
+          // Call onLogin to update App component with user info
+          onLogin(res.userId, res.nickname);
+        } catch (e) { setError(e.message); }
+        finally { setIsLoading(false); }
+      };
+
+      const handleLogout = () => {
+        setIsLoggedIn(false);
+        setLoggedInUserId('');
+        setLoggedInNick('');
+        setShowSettingsMenu(false);
+        // Call onLogin with empty values to reset App component
+        onLogin('', '');
+      };
+
+      useEffect(() => {
+        const observers = [];
+        const observerOptions = {
+          root: null,
+          rootMargin: '-50px',
+          threshold: 0.2
+        };
+
+        const handleIntersection = (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              setVisibleSections(prev => new Set([...prev, entry.target.id]));
+              // 애니메이션은 1회만 실행되도록 별도로 관리
+              setAnimatedSections(prev => {
+                if (!prev.has(entry.target.id)) {
+                  return new Set([...prev, entry.target.id]);
+                }
+                return prev;
+              });
+            }
+          });
+        };
+
+        // 섹션 하단 감지를 위한 Observer - 하단이 화면에 보일 때 감지
+        const bottomObserverOptions = {
+          root: null,
+          rootMargin: '-100px',
+          threshold: 0.3
+        };
+
+        const handleBottomIntersection = (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const sectionId = entry.target.id.replace('-bottom', '');
+              setBottomVisibleSections(prev => new Set([...prev, entry.target.id]));
+            } else {
+              // 화면에서 벗어나면 제거하지 않음 (한 번 보이면 계속 유지)
+            }
+          });
+        };
+
+        Object.values(sectionRefs.current).forEach(ref => {
+          if (ref) {
+            const observer = new IntersectionObserver(handleIntersection, observerOptions);
+            observer.observe(ref);
+            observers.push(observer);
+          }
+        });
+
+        // 하단 마커 관찰 설정
+        const setupBottomObserver = () => {
+          Object.keys(bottomMarkerRefs.current).forEach(key => {
+            const ref = bottomMarkerRefs.current[key];
+            if (ref) {
+              const observer = new IntersectionObserver(handleBottomIntersection, bottomObserverOptions);
+              observer.observe(ref);
+              observers.push(observer);
+            }
+          });
+        };
+        
+        // 초기 설정
+        setupBottomObserver();
+        
+        // 약간의 지연 후 다시 시도 (refs가 아직 설정되지 않았을 수 있음)
+        const timeoutId = setTimeout(() => {
+          setupBottomObserver();
+        }, 100);
+        
+        return () => {
+          clearTimeout(timeoutId);
+          observers.forEach(observer => observer.disconnect());
+        };
+      }, []);
+
+      // 자동 애니메이션 순서:
+      // 1. 로고 + 제목 (즉시 표시)
+      // 2. 서비스 설명 (0초 시작, 1초 지속)
+      // 3. "내 상태 입력" 제목 (사용자가 아래로 스크롤할 때 IntersectionObserver로 감지하여 시작)
+
+      const introText = {
+        ko: {
+          heroTitle: "PickEase",
+          heroSubtitle: "당신의 기분과 상황에 딱 맞는 음식을 찾아드립니다",
+          feature1Title: "당신의 오늘은 어땠나요?",
+          feature1Desc: "지금의 기분과 상황을 간단히 입력하면, AI가 당신에게 가장 적합한 음식을 추천해드립니다. 피곤한 하루, 기쁜 날, 외로운 밤... 어떤 상태든 PickEase가 이해합니다.",
+          feature2Title: "당신에게 전하는 한 마디",
+          feature2Desc: "감정을 이해하는 AI 코치가 당신의 하루를 응원하며, 기분에 맞는 따뜻한 메시지를 전달합니다. 단순한 추천이 아닌, 당신의 감정을 읽는 파트너입니다.",
+          feature3Title: "이런 메뉴 어때요?",
+          feature3Desc: "개인화된 추천 알고리즘이 당신의 취향과 과거 기록을 분석하여 최적의 음식 10가지를 제안합니다. 좋아요, 싫어요, 저장하기로 더욱 정확한 추천을 만들어가세요.",
+          feature4Title: "근처에서 맛집도 찾을 수 있어요",
+          feature4Desc: "추천받은 음식을 실제로 맛볼 수 있는 주변 맛집을 Google Maps와 연동하여 찾아드립니다. 지금 바로 맛있는 식사를 시작하세요.",
+          serviceTitle: "PickEase란?",
+          serviceDesc: "PickEase는 AI 기반 개인화 음식 추천 서비스입니다. 당신의 기분, 취향, 과거 기록을 종합적으로 분석하여 매번 새로운 식사 경험을 제공합니다. 더 이상 '뭐 먹지?' 고민하지 마세요. PickEase가 당신의 식사 파트너가 되어드립니다.",
+          serviceOverview: "PickEase는 당신의 기분과 상황을 이해하는 AI가 최적의 음식을 추천해주는 서비스입니다. 기분과 상황을 나타내는 키워드를 선택하거나, 키워드 없이 간편하게 선택할 수 있습니다. AI는 당신의 과거 기록과 선호도를 분석하여 10가지 음식을 추천해드리며, 각 음식에 대한 이유도 함께 제공합니다. 추천받은 음식을 실제로 맛볼 수 있는 근처 맛집도 Google Maps와 연동하여 자동으로 찾아드립니다. Google Maps의 리뷰와 별점을 분석하여 신뢰할 수 있는 맛집만을 추천해드리므로, 더 이상 '뭐 먹지?' 고민하지 마세요. 매일 반복되는 식사 선택의 고민을 해결하고, 당신만의 맞춤형 식사 경험을 만들어가세요.",
+          serviceCTA: "메뉴 정하기, 같이 시작해볼까요?",
+          serviceCTADesc: "PickEase와 함께하면 매번 새로운 맛있는 경험이 기다리고 있어요. 지금 바로 시작해보세요!"
+        },
+        en: {
+          heroTitle: "PickEase",
+          heroSubtitle: "Find the perfect food that matches your mood and situation",
+          feature1Title: "Input Your State",
+          feature1Desc: "Simply enter your current mood and situation, and AI will recommend the perfect food for you. Tired day, happy day, lonely night... PickEase understands any state.",
+          feature2Title: "AI Mood Coach",
+          feature2Desc: "An AI coach that understands your emotions cheers you on and delivers warm messages that match your mood. Not just a recommendation, but a partner who reads your emotions.",
+          feature3Title: "Food Recommendations",
+          feature3Desc: "Personalized recommendation algorithm analyzes your preferences and past records to suggest 10 optimal food options. Create more accurate recommendations with likes, dislikes, and saves.",
+          feature4Title: "Find Nearby Restaurants",
+          feature4Desc: "Find nearby restaurants where you can actually enjoy the recommended food, integrated with Google Maps. Start your delicious meal right now.",
+          serviceTitle: "What is PickEase?",
+          serviceDesc: "PickEase is an AI-based personalized food recommendation service. It comprehensively analyzes your mood, preferences, and past records to provide a new dining experience every time. No more 'What should I eat?' worries. Let PickEase be your dining partner.",
+          serviceOverview: "PickEase is a service where AI that understands your mood and situation recommends the perfect food for you. You can select keywords that represent your mood and situation, or make a simple selection without keywords. AI analyzes your past records and preferences to recommend 10 foods, along with reasons for each recommendation. Nearby restaurants where you can actually enjoy the recommended food are automatically found through Google Maps integration. By analyzing Google Maps reviews and ratings, we only recommend trustworthy restaurants, so you no longer have to worry about 'What should I eat?'. Solve the daily dilemma of meal selection and create your own personalized dining experience.",
+          serviceCTA: "Let's decide on a menu together, shall we?",
+          serviceCTADesc: "With PickEase, new delicious experiences await you every time. Start now!"
+        }
+      };
+
+      const intro = introText[lang];
+      
+      // 키워드 배치를 위한 고정된 값 생성 - 실제 UI와 동일하게
+      const keywordLayout = useMemo(() => {
+        // 실제 키워드 고르기 화면의 키워드들 사용
+        const MOOD_GROUPS = lang === 'ko' ? [
+          { title: '긍정적 에너지', items: ["행복한", "뿌듯한", "설레는", "활기찬", "기대되는", "재밌는", "기운 나는"] },
+          { title: '차분함 & 집중', items: ["안정된", "차분한", "집중하는", "고민이 많은"] },
+          { title: '지침 & 부정적', items: ["슬픈", "화난", "지친", "불안한", "외로운", "부담되는", "우울한", "답답한", "식욕 없는", "공허한", "멍한", "귀찮은", "심심한", "무기력한"] }
+        ] : [
+          { title: 'Positive', items: ["Happy", "Proud", "Excited", "Energetic", "Hopeful", "Fun", "Energized"] },
+          { title: 'Calm & Focus', items: ["Calm", "Peaceful", "Focused", "Thoughtful"] },
+          { title: 'Negative & Tired', items: ["Sad", "Angry", "Tired", "Anxious", "Lonely", "Stressed", "Depressed", "Frustrated", "No appetite", "Empty", "Dazed", "Annoyed", "Bored", "Unmotivated"] }
+        ];
+        const SITUATION_GROUPS = lang === 'ko' ? [
+          { title: '일과 학업', items: ["과제/업무", "회의/수업", "마감 임박", "시험 준비", "야근/밤샘"] },
+          { title: '활동과 휴식', items: ["운동", "산책", "휴식", "게임/영화", "독서", "혼자만의 시간", "SNS", "그냥 누워있음"] },
+          { title: '신체 상태', items: ["배고픔", "속이 불편함", "체력 방전", "숙취"] },
+          { title: '날씨', items: ["더워요", "추워요", "비/눈 와요", "날씨가 좋아요"] },
+          { title: '누구와 함께', items: ["혼밥", "친구와", "연인과", "가족과"] }
+        ] : [
+          { title: 'Work & Study', items: ["Assignment/Work", "Meeting/Class", "Deadline", "Exam Prep", "Overtime/All-nighter"] },
+          { title: 'Activity & Rest', items: ["Exercise", "Walk", "Rest", "Gaming/Movie", "Reading", "Alone time", "Social Media", "Just lying down"] },
+          { title: 'Physical Condition', items: ["Hungry", "Stomach upset", "Exhausted", "Hangover"] },
+          { title: 'Weather', items: ["Hot", "Cold", "Rainy/Snowy", "Nice weather"] },
+          { title: 'With Whom', items: ["Solo meal", "With friends", "With partner", "With family"] }
+        ];
+        
+        const allKeywords = [...MOOD_GROUPS, ...SITUATION_GROUPS].flatMap(g => g.items);
+        // 위에서 아래로 칠해질 키워드들 (약 5-6개)
+        const selectedKeywords = [];
+        const totalSelect = 5 + Math.floor(Math.random() * 2);
+        
+        for (let i = 0; i < totalSelect; i++) {
+          const randomIdx = Math.floor(Math.random() * allKeywords.length);
+          selectedKeywords.push(allKeywords[randomIdx]);
+        }
+        
+        return {
+          moodGroups: MOOD_GROUPS,
+          situationGroups: SITUATION_GROUPS,
+          selectedKeywords
+        };
+      }, [lang]);
+      const moodMessages = lang === 'ko'
+        ? [
+            '오늘 하루도 수고 많으셨어요. 따뜻한 음식으로 하루를 마무리해보세요.',
+            '기쁜 마음으로 즐거운 식사를 하시길 바라요!',
+            '혼자라도 맛있는 식사로 하루를 채워보세요.'
+          ]
+        : [
+            'You did great today. Finish your day with warm food.',
+            'Hope you enjoy a happy meal with a joyful heart!',
+            'Even alone, fill your day with delicious food.'
+          ];
+      const foodExamples = lang === 'ko'
+        ? [
+            { name: '돼지고기구이', reason: '숯불에 구워진 쫄깃한 돼지고기의 고소한 맛이 입맛을 돋우고, 신선한 상추와 함께 즐기면 더욱 상큼한 맛이 살아나요. 당신의 입맛을 확 살려줄 거예요.' },
+            { name: '우동', reason: '쫄깃한 면발과 진한 국물의 조화가 일품이에요. 따뜻한 우동 한 그릇이 피로한 하루를 정리해주고, 일본 정통의 깊은 맛이 당신의 미각을 만족시켜줄 거랍니다.' },
+            { name: '곱창', reason: '바삭하게 구워진 곱창의 쫄깃한 식감과 고소한 맛이 중독적이에요. 마늘과 함께 즐기면 풍미가 더욱 살아나며, 당신의 입맛을 사로잡을 만한 매력적인 선택이 될 거예요.' }
+          ]
+        : [
+            { name: 'Grilled Pork', reason: 'Charcoal-grilled tender pork with savory flavor will awaken your appetite. Fresh lettuce wraps enhance the crisp taste, making it a perfect palate-pleaser.' },
+            { name: 'Udon', reason: 'Chewy noodles paired with rich, deep broth create a harmonious taste. A warm bowl of authentic Japanese udon will soothe your tired day and satisfy your refined palate.' },
+            { name: 'Grilled Tripe', reason: 'Crispy grilled tripe with chewy texture and savory flavor is absolutely addictive. Paired with garlic, the umami deepens, making it an irresistible choice that will captivate your taste buds.' }
+          ];
+
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark relative overflow-y-auto z-0">
+          {/* Top-left Logo and Brand Name */}
+          <div className="fixed top-0 left-10 z-50 p-4 flex items-center gap-2">
+            <img
+              src="https://drive.google.com/thumbnail?id=1wGgD5RSMQCp29zMQTDcM6bv3MGhhxDxU&sz=w1648"
+              className="w-auto h-6 object-contain"
+              alt="PickEase Logo"
+              referrerPolicy="no-referrer"
+              style={{ aspectRatio: '412/387' }}
+            />
+            <span className="font-bold text-gray-900 dark:text-white text-sm">PickEase</span>
+          </div>
+
+          {/* Fixed Header with Login/Signup buttons or Post-Login Menu */}
+          <div className="fixed top-0 right-0 z-50 p-4 flex items-center gap-3">
+            {!isLoggedIn ? (
+              <>
+                <button 
+                  onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} 
+                  className="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full shadow-md text-xs font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {lang === 'ko' ? 'KR' : 'EN'} | <span className="text-gray-400">{lang === 'ko' ? 'EN' : 'KR'}</span>
+                </button>
+                <button 
+                  onClick={() => setShowLoginModal(true)}
+                  className="px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {t.login}
+                </button>
+                <button 
+                  onClick={onGoSignup}
+                  className="px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full shadow-md text-sm font-bold hover:bg-gray-800 dark:hover:bg-gray-100"
+                >
+                  {t.signup}
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => onNavigate && onNavigate('SIMPLE')}
+                  className="px-4 py-2 bg-primary text-white rounded-full shadow-md text-sm font-bold hover:bg-primary-hover"
+                >
+                  {lang === 'ko' ? '새로운 선택' : 'New Choice'}
+                </button>
+                <button 
+                  onClick={() => onNavigate && onNavigate('RANDOM')}
+                  className="px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  {lang === 'ko' ? '간편한 선택' : 'Simple Choice'}
+                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                    className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-2xl">menu</span>
+                  </button>
+                  {showSettingsMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                      <button onClick={() => onNavigate && onNavigate('MY_ACCOUNT')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 계정' : 'My Account'}</button>
+                      <button onClick={() => onNavigate && onNavigate('MY_HISTORY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '나의 추천 기록' : 'My History'}</button>
+                      <button onClick={() => onNavigate && onNavigate('MY_ACTIVITY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 활동' : 'My Activity'}</button>
+                      <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                      <button 
+                        onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                      >
+                        {lang === 'ko' ? '언어: 한국어' : 'Language: English'}
+                      </button>
+                      <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-bold"
+                      >
+                        {lang === 'ko' ? '로그아웃' : 'Logout'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Hero Section - Center Content */}
+          <section className="min-h-screen flex items-center justify-center px-6 text-center relative">
+            <div className="relative z-10 max-w-3xl">
+              {/* Logo and Brand Name - Small, Side by Side */}
+              <div className="flex justify-center items-center gap-3 mb-8">
+                <img
+                  src="https://drive.google.com/thumbnail?id=1wGgD5RSMQCp29zMQTDcM6bv3MGhhxDxU&sz=w1648"
+                  className="w-auto h-8 object-contain"
+                  alt="PickEase Logo"
+                  referrerPolicy="no-referrer"
+                  style={{ aspectRatio: '412/387' }}
+                />
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                  {intro.heroTitle}
+                </span>
+              </div>
+
+              {/* Main Message - Two Lines with Different Emphasis */}
+              <div className="space-y-4">
+                <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-white">
+                  {lang === 'ko' ? '메뉴 선택의 새로운 기준을 경험하세요.' : 'Experience next-level menu selection'}
+                </h1>
+                <p className="text-2xl sm:text-3xl font-semibold text-gray-600 dark:text-gray-300">
+                  {lang === 'ko' ? '당신만을 위한 AI와 함께.' : 'Powered by AI for you.'}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+                <button 
+                  onClick={() => {
+                    if (isLoggedIn) {
+                      onNavigate && onNavigate('SIMPLE');
+                    } else {
+                      setShowLoginModal(true);
+                    }
+                  }}
+                  className="px-8 py-3 bg-primary text-white rounded-full font-bold text-lg shadow-md hover:shadow-lg transition-all"
+                >
+                  {lang === 'ko' ? '새로운 선택' : 'New Choice'}
+                </button>
+                <button 
+                  onClick={() => {
+                    if (isLoggedIn) {
+                      onNavigate && onNavigate('RANDOM');
+                    } else {
+                      setShowLoginModal(true);
+                    }
+                  }}
+                  className="px-8 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-full font-bold text-lg shadow-md hover:shadow-lg transition-all"
+                >
+                  {lang === 'ko' ? '간편한 선택' : 'Simple Choice'}
+                </button>
+              </div>
+            </div>
+          </section>
+          
+          {/* Detailed Service Description - Scrollable Section */}
+          <section className="py-20 px-12 bg-gray-50 dark:bg-gray-900">
+            <div className="w-full max-w-6xl">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-8 text-left animate-fade-in-delayed" style={{ animationDelay: '0s' }}>
+                {lang === 'ko' ? '점심 뭐 먹지..? 더 이상 고민하지 마세요.' : 'What\'s for lunch? Stop worrying.'}
+              </h2>
+              <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed animate-fade-in-delayed" style={{ animationDelay: '0.6s' }}>
+                {lang === 'ko' ? `PickEase는 AI 기반 개인화 음식 추천 서비스입니다. 사용자의 기분·상황·취향·과거 기록을 종합 분석하여 10가지 맞춤 메뉴와 추천 이유를 제공합니다. 키워드를 선택해 상태를 입력하거나, 입력 없이 간편 추천도 받을 수 있습니다. 추천된 음식은 Google Maps와 연동된 주변 맛집 정보까지 자동으로 제공되며, 리뷰·별점 데이터를 분석해 신뢰할 수 있는 매장만 추천합니다. 매번 반복되는 '뭐 먹지?' 고민 없이, 당신만의 맞춤형 식사 경험을 만들어보세요.` : 'PickEase is an AI-powered personalized food recommendation service. We analyze your mood, situation, preferences, and past records to provide 10 customized menus with reasons. You can input your status by selecting keywords or get convenient recommendations without input. Recommended foods automatically include nearby restaurant information linked with Google Maps, and we recommend only trustworthy establishments by analyzing reviews and ratings. Stop worrying about "What should I eat?" and create your own personalized dining experience.'}
+              </p>
+            </div>
+          </section>
+
+          {/* Feature 1: 내 상태 입력 */}
+          <section 
+            id="feature1"
+            ref={el => sectionRefs.current.feature1 = el}
+            className={`min-h-screen flex items-center px-12 py-20 relative gradient-overlay ${visibleSections.has('feature1') ? 'section-visible' : 'section-hidden'}`}
+          >
+            <div className="w-full max-w-6xl">
+              <h2 className={`text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-8 ${
+                visibleSections.has('feature1') ? 'title-fade-in' : 'title-hidden'
+              }`}>
+                {intro.feature1Title}
+              </h2>
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-4xl">
+                {intro.feature1Desc}
+              </p>
+              
+              {/* Keywords Animation - 실제 UI와 동일한 배치 */}
+              <div className="relative min-h-[400px] overflow-hidden rounded-2xl bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 p-6">
+                {/* 기분 키워드 */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-bold text-gray-500 mb-3">{lang === 'ko' ? '기분' : 'Mood'}</h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {keywordLayout.moodGroups.flatMap(g => g.items).slice(0, 12).map((keyword, idx) => {
+                      const isSelected = keywordLayout.selectedKeywords.includes(keyword);
+                      const riseDelay = idx * 0.05;
+                      const fillDelay = keywordLayout.selectedKeywords.indexOf(keyword) * 0.15;
+                      
+                      return (
+                        <button
+                          key={keyword}
+                          className={`h-10 rounded-lg border text-sm font-medium transition-colors ${
+                            isSelected && bottomVisibleSections.has('feature1-bottom')
+                              ? 'bg-primary text-white border-primary'
+                              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+                          } ${
+                            animatedSections.has('feature1') ? 'keyword-rise-up' : 'opacity-0 translate-y-[100px]'
+                          }`}
+                          style={{
+                            animationDelay: `${riseDelay}s`,
+                            transition: isSelected && bottomVisibleSections.has('feature1-bottom') 
+                              ? 'background-color 0.3s ease-out, color 0.3s ease-out, border-color 0.3s ease-out' 
+                              : 'none',
+                            transitionDelay: isSelected && bottomVisibleSections.has('feature1-bottom') ? `${fillDelay}s` : '0s'
+                          }}
+                        >
+                          {keyword}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* 상황 키워드 */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-500 mb-3">{lang === 'ko' ? '상황' : 'Situation'}</h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {keywordLayout.situationGroups.flatMap(g => g.items).slice(0, 12).map((keyword, idx) => {
+                      const isSelected = keywordLayout.selectedKeywords.includes(keyword);
+                      const riseDelay = (12 + idx) * 0.05;
+                      const fillDelay = keywordLayout.selectedKeywords.indexOf(keyword) * 0.15;
+                      
+                      return (
+                        <button
+                          key={keyword}
+                          className={`h-10 rounded-lg border text-sm font-medium transition-colors ${
+                            isSelected && bottomVisibleSections.has('feature1-bottom')
+                              ? 'bg-primary text-white border-primary'
+                              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+                          } ${
+                            animatedSections.has('feature1') ? 'keyword-rise-up' : 'opacity-0 translate-y-[100px]'
+                          }`}
+                          style={{
+                            animationDelay: `${riseDelay}s`,
+                            transition: isSelected && bottomVisibleSections.has('feature1-bottom') 
+                              ? 'background-color 0.3s ease-out, color 0.3s ease-out, border-color 0.3s ease-out' 
+                              : 'none',
+                            transitionDelay: isSelected && bottomVisibleSections.has('feature1-bottom') ? `${fillDelay}s` : '0s'
+                          }}
+                        >
+                          {keyword}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {/* 하단 마커 */}
+                <div 
+                  id="feature1-bottom"
+                  ref={el => {
+                    if (el) bottomMarkerRefs.current['feature1-bottom'] = el;
+                  }} 
+                  className="h-1 w-full mt-4"
+                ></div>
+              </div>
+            </div>
+          </section>
+
+          {/* Feature 2: AI Mood Coach */}
+          <section 
+            id="feature2"
+            ref={el => sectionRefs.current.feature2 = el}
+            className={`min-h-screen flex items-center px-12 py-20 relative gradient-overlay ${visibleSections.has('feature2') ? 'section-visible' : 'section-hidden'}`}
+          >
+            <div className="w-full max-w-6xl">
+              <h2 className={`text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-8 ${
+                visibleSections.has('feature2') ? 'title-fade-in' : 'title-hidden'
+              }`}>
+                {intro.feature2Title}
+              </h2>
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-4xl">
+                {intro.feature2Desc}
+              </p>
+              
+              {/* Mood Messages Animation */}
+              <div className="space-y-4">
+                {moodMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 ${
+                      animatedSections.has('feature2') ? 'slide-up-animation' : 'slide-up-hidden'
+                    }`}
+                    style={{ animationDelay: `${idx * 0.3}s` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-primary text-2xl">favorite</span>
+                      <p className="text-gray-700 dark:text-gray-200 text-lg leading-relaxed">{msg}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Feature 3: 음식 추천 결과 */}
+          <section 
+            id="feature3"
+            ref={el => sectionRefs.current.feature3 = el}
+            className={`min-h-screen flex items-center px-12 py-20 relative gradient-overlay ${visibleSections.has('feature3') ? 'section-visible' : 'section-hidden'}`}
+          >
+            <div className="w-full max-w-6xl">
+              <h2 className={`text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-8 ${
+                visibleSections.has('feature3') ? 'title-fade-in' : 'title-hidden'
+              }`}>
+                {intro.feature3Title}
+              </h2>
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-4xl">
+                {intro.feature3Desc}
+              </p>
+              
+              {/* Food Cards Animation */}
+              <div className="space-y-4">
+                {foodExamples.map((food, idx) => {
+                  const shouldLike = (idx === 0 || idx === 2) && bottomVisibleSections.has('feature3-bottom');
+                  const shouldSave = idx === 1 && bottomVisibleSections.has('feature3-bottom');
+                  const baseDelay = idx * 0.2 + 0.3;
+                  const clickDelay = shouldLike ? baseDelay : (shouldSave ? baseDelay : 0);
+                  
+                  return (
+                    <FoodCard
+                      key={idx}
+                      food={food}
+                      idx={idx}
+                      shouldAnimate={animatedSections.has('feature3')}
+                      shouldLike={shouldLike}
+                      shouldSave={shouldSave}
+                      clickDelay={clickDelay}
+                    />
+                  );
+                })}
+                {/* 하단 마커 */}
+                <div 
+                  id="feature3-bottom"
+                  ref={el => {
+                    if (el) bottomMarkerRefs.current['feature3-bottom'] = el;
+                  }} 
+                  className="h-1 w-full mt-4"
+                ></div>
+              </div>
+            </div>
+          </section>
+
+          {/* Feature 4: 근처 맛집 찾기 */}
+          <section 
+            id="feature4"
+            ref={el => sectionRefs.current.feature4 = el}
+            className={`min-h-screen flex items-center px-12 py-20 relative gradient-overlay ${visibleSections.has('feature4') ? 'section-visible' : 'section-hidden'}`}
+          >
+            <div className="w-full max-w-6xl">
+              <h2 className={`text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-8 ${
+                visibleSections.has('feature4') ? 'title-fade-in' : 'title-hidden'
+              }`}>
+                {intro.feature4Title}
+              </h2>
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-4xl">
+                {intro.feature4Desc}
+              </p>
+              
+              {/* Restaurant Cards - 실제 서비스 UI */}
+              <div className="space-y-3">
+                {[
+                  { 
+                    name: '끄트머리집', 
+                    rating: 4.6, 
+                    summary: lang === 'ko' ? '진한 불맛과 쫄깃한 돼지고기, 잘 익은 김치가 조화를 이루는 돼지김치구이 전문점입니다. 숯불에 구워 더욱 고소한 맛이 일품이에요.' 
+                      : 'A specialty pork kimchi grill restaurant where rich fire flavor, chewy pork, and well-fermented kimchi harmonize. Grilled over charcoal for an extra savory taste.' 
+                  },
+                  { 
+                    name: '우동가조쿠', 
+                    rating: 4.5, 
+                    summary: lang === 'ko' ? '쫄깃한 면발과 깔끔한 국물이 일품인 우동 전문점입니다. 일본 정통 레시피로 만든 진한 맛이 매력적이에요.' 
+                      : 'A udon specialty restaurant with chewy noodles and clean broth. The rich flavor made with authentic Japanese recipes is appealing.' 
+                  },
+                  { 
+                    name: '땅코참숯구이 본점', 
+                    rating: 4.7, 
+                    summary: lang === 'ko' ? '참숯불에 구운 돼지고기의 고소함이 일품인 구이 전문점입니다. 신선한 고기와 정성스러운 조리로 많은 사랑을 받고 있어요.' 
+                      : 'A grilled meat specialty restaurant where pork grilled over oak charcoal is exceptionally savory. Loved by many for fresh meat and careful cooking.' 
+                  },
+                  { 
+                    name: '제일곱창 본점', 
+                    rating: 4.8, 
+                    summary: lang === 'ko' ? '신선한 곱창을 바삭하게 구워내는 곱창 전문점입니다. 쫄깃한 식감과 고소한 맛이 일품이며, 다양한 곱창 요리를 즐길 수 있어요.' 
+                      : 'A tripe specialty restaurant that grills fresh tripe to a crispy texture. The chewy texture and savory taste are exceptional, and you can enjoy various tripe dishes.' 
+                  }
+                ].map((restaurant, idx) => (
+                  <div
+                    key={idx}
+                    className={`bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 ${
+                      animatedSections.has('feature4') ? 'slide-up-animation' : 'slide-up-hidden'
+                    }`}
+                    style={{ animationDelay: `${idx * 0.2}s` }}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                        {restaurant.name}
+                      </h3>
+                      <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded text-sm font-bold flex items-center gap-1 shrink-0">
+                        <span className="material-symbols-outlined text-sm fill-icon">star</span>
+                        {restaurant.rating}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{restaurant.summary}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Service CTA Section */}
+          <section 
+            id="service"
+            ref={el => sectionRefs.current.service = el}
+            className={`py-20 px-12 ${visibleSections.has('service') ? 'section-visible' : 'section-hidden'}`}
+          >
+            <div className="max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+              <div className="flex-1">
+                <h2 className={`text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4 ${
+                  visibleSections.has('service') ? 'title-fade-in' : 'title-hidden'
+                }`}>
+                  {intro.serviceCTA}
+                </h2>
+                <p className="text-lg sm:text-xl text-gray-700 dark:text-gray-200 leading-relaxed">
+                  {intro.serviceCTADesc}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="px-8 py-4 bg-primary text-white text-lg font-bold rounded-xl hover:bg-primary-hover transition-colors shadow-lg shrink-0 lg:ml-auto"
+              >
+                {t.login}
+              </button>
+            </div>
+          </section>
+
+          {/* Footer spacing */}
+          <div className="pb-20"></div>
+
+
+          {/* Login Modal */}
+          {showLoginModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 modal-backdrop" onClick={() => setShowLoginModal(false)}>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t.login}</h2>
+                  <button 
+                    onClick={() => setShowLoginModal(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <span className="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+                <div className="space-y-4 mb-6">
+                  <input 
+                    className="w-full h-12 rounded-xl px-4 text-base border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white" 
+                    placeholder={t.id} 
+                    value={userId} 
+                    onChange={e => { setUserId(e.target.value); setError(''); }} 
+                  />
+                  <input 
+                    type="password" 
+                    className="w-full h-12 rounded-xl px-4 text-base border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white" 
+                    placeholder={t.pw} 
+                    value={password} 
+                    onChange={e => { setPassword(e.target.value); setError(''); }} 
+                    onKeyDown={e => e.key === 'Enter' && handleLogin()} 
+                  />
+                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                </div>
+                <button 
+                  onClick={handleLogin} 
+                  disabled={isLoading} 
+                  className="w-full h-12 bg-primary text-white text-base font-bold rounded-xl hover:bg-primary-hover mb-3"
+                >
+                  {isLoading ? '...' : t.login}
+                </button>
+                <div className="text-center space-y-2">
+                  <div>
+                    <button 
+                      onClick={() => { setShowLoginModal(false); onGoSignup(); }} 
+                      className="text-gray-500 dark:text-gray-400 hover:text-primary text-sm"
+                    >
+                      {t.noAccount} <b>{t.signup}</b>
+                    </button>
+                  </div>
+                  <div>
+                    <button 
+                      onClick={() => { setShowLoginModal(false); onFindPassword(); }} 
+                      className="text-gray-500 dark:text-gray-400 hover:text-primary text-sm"
+                    >
+                      {t.findPassword}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const FindPasswordScreen = ({ onBack, lang }) => {
+      const t = TEXT[lang];
+      const [userId, setUserId] = useState('');
+      const [email, setEmail] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState(false);
+
+      const handleReset = async () => {
+        if (!userId.trim() || !email.trim()) {
+          setError(t.req);
+          return;
+        }
+        setIsLoading(true);
+        setError('');
+        setSuccess(false);
+        try {
+          const res = await api.resetPassword(userId.trim(), email.trim());
+          setSuccess(true);
+        } catch (e) {
+          setError(e.message || t.findPasswordError);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      return (
+        <div className="animate-fade-in flex min-h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark p-4 relative">
+          <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 sm:p-12 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <button onClick={onBack} className="mb-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
+              <span className="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-white">{t.findPasswordTitle}</h1>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 text-center whitespace-pre-line">{t.findPasswordDesc}</p>
+
+            {success ? (
+              <div className="text-center space-y-4">
+                <div className="text-6xl mb-4">📧</div>
+                <p className="text-gray-800 dark:text-gray-200 font-medium whitespace-pre-line">{t.findPasswordSuccess}</p>
+                <button onClick={onBack} className="w-full h-14 bg-primary text-white text-lg font-bold rounded-xl hover:bg-primary-hover mt-6">
+                  {t.login}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  <input
+                    className="w-full h-14 rounded-xl px-4 text-lg border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+                    placeholder={t.id}
+                    value={userId}
+                    onChange={e => { setUserId(e.target.value); setError(''); }}
+                  />
+                  <input
+                    type="email"
+                    className="w-full h-14 rounded-xl px-4 text-lg border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white"
+                    placeholder={t.email}
+                    value={email}
+                    onChange={e => { setEmail(e.target.value); setError(''); }}
+                    onKeyDown={e => e.key === 'Enter' && handleReset()}
+                  />
+                  {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                </div>
+                <button
+                  onClick={handleReset}
+                  disabled={isLoading}
+                  className="w-full h-14 bg-primary text-white text-lg font-bold rounded-xl hover:bg-primary-hover mb-3"
+                >
+                  {isLoading ? '...' : lang === 'ko' ? '임시 비밀번호 전송' : 'Send Temporary Password'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const SignupScreen = ({ onBack, onSuccess, lang }) => {
+      const t = TEXT[lang];
+      const [id, setId] = useState('');
+      const [email, setEmail] = useState('');
+      const [pw, setPw] = useState('');
+      const [nick, setNick] = useState('');
+      const [agreed, setAgreed] = useState(false);
+      const [idChecked, setIdChecked] = useState(false);
+      const [errors, setErrors] = useState({});
+      const [isChecking, setIsChecking] = useState(false);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [privacyExpanded, setPrivacyExpanded] = useState(false);
+      const validateId = async () => {
+        if (!id.trim()) return setErrors({ ...errors, id: t.req });
+        setIsChecking(true);
+        try {
+          const exists = await api.checkIdExists(id.trim());
+          if (exists) { setErrors({ ...errors, id: t.idTaken }); setIdChecked(false); }
+          else { setErrors({ ...errors, id: '' }); setIdChecked(true); }
+        } catch (e) { setErrors({ ...errors, id: 'Error' }); }
+        finally { setIsChecking(false); }
+      };
+      const handleSubmit = async () => {
+        const newErrors = {};
+        const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*?_~])[A-Za-z\d!@#$%^&*?_~]{8,}$/;
+        if (!id.trim()) newErrors.id = t.req;
+        else if (!idChecked) newErrors.id = lang === 'ko' ? "아이디 중복 확인을 해주세요." : "Check ID.";
+        if (!email.trim()) newErrors.email = t.req;
+        if (!pw) newErrors.pw = t.req;
+        else if (!pwRegex.test(pw)) newErrors.pw = t.pwRule;
+        if (!nick.trim()) newErrors.nick = t.req;
+        if (!agreed) newErrors.agree = t.privacy;
+        setErrors(newErrors);
+        if (Object.keys(newErrors).length > 0) return;
+        setIsSubmitting(true);
+        try {
+          await api.register(id, pw, nick, email);
+          onSuccess(id, nick);
+        } catch (e) {
+          alert(e.message);
+          setIsSubmitting(false);
+        }
+      };
+      return (
+        <div className="animate-fade-in flex min-h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark p-4">
+          <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg my-8">
+            <h1 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">{t.signupTitle}</h1>
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t.idFree} <span className="text-red-500">*</span></label>
+                <div className="flex gap-2">
+                  <input className={`flex-1 h-12 rounded-xl border-gray-300 dark:bg-gray-900 dark:text-white px-4 ${errors.id ? 'border-red-500' : ''}`} value={id} onChange={e => { setId(e.target.value); setIdChecked(false); }} />
+                  <button onClick={validateId} disabled={isChecking || !id} className="px-4 rounded-xl bg-gray-200 dark:bg-gray-700 text-sm font-bold hover:bg-gray-300 dark:hover:bg-gray-600">{t.checkId}</button>
+                </div>
+                {idChecked && !errors.id && <p className="text-green-500 text-sm mt-1">{t.idAvail}</p>}
+                {errors.id && <p className="text-red-500 text-sm mt-1">{errors.id}</p>}
+              </div>
+              <div><label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t.email} <span className="text-red-500">*</span></label><input className={`w-full h-12 rounded-xl border-gray-300 dark:bg-gray-900 dark:text-white px-4 ${errors.email ? 'border-red-500' : ''}`} value={email} onChange={e => setEmail(e.target.value)} />{errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}</div>
+              <div><label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t.pw} <span className="text-red-500">*</span></label><input type="password" className={`w-full h-12 rounded-xl border-gray-300 dark:bg-gray-900 dark:text-white px-4 ${errors.pw ? 'border-red-500' : ''}`} value={pw} onChange={e => setPw(e.target.value)} /><p className="text-gray-400 text-xs mt-1">{t.pwRule}</p>{errors.pw && <p className="text-red-500 text-sm mt-1">{errors.pw}</p>}</div>
+              <div><label className="block text-sm font-bold mb-1 text-gray-700 dark:text-gray-300">{t.nick} <span className="text-red-500">*</span></label><input className={`w-full h-12 rounded-xl border-gray-300 dark:bg-gray-900 dark:text-white px-4 ${errors.nick ? 'border-red-500' : ''}`} value={nick} onChange={e => setNick(e.target.value)} />{errors.nick && <p className="text-red-500 text-sm mt-1">{errors.nick}</p>}</div>
+              <div className="space-y-3">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} className="mt-1 rounded text-primary" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{t.privacy}</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setPrivacyExpanded(!privacyExpanded)}
+                  className="flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  <span className="material-symbols-outlined text-sm">{privacyExpanded ? 'expand_less' : 'expand_more'}</span>
+                  {privacyExpanded ? t.privacyHide : t.privacyShow}
+                </button>
+                {privacyExpanded && (
+                  <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-4 text-xs text-gray-600 dark:text-gray-400 space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar border border-gray-200 dark:border-gray-700">
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-2">{t.privacyTitle1}</h4>
+                      <p className="leading-relaxed whitespace-pre-line">{t.privacyContent1}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-2">{t.privacyTitle2}</h4>
+                      <p className="leading-relaxed whitespace-pre-line">{t.privacyContent2}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-2">{t.privacyTitle3}</h4>
+                      <p className="leading-relaxed whitespace-pre-line">{t.privacyContent3}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-2">{t.privacyTitle4}</h4>
+                      <p className="leading-relaxed whitespace-pre-line">{t.privacyContent4}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-2">{t.privacyTitle5}</h4>
+                      <p className="leading-relaxed whitespace-pre-line">{t.privacyContent5}</p>
+                    </div>
+                  </div>
+                )}
+                {errors.agree && <p className="text-red-500 text-sm mt-1">{errors.agree}</p>}
+              </div>
+            </div>
+            <div className="flex gap-3 mt-8"><button onClick={onBack} disabled={isSubmitting} className="flex-1 h-14 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300 disabled:opacity-50">{t.cancel}</button><button onClick={handleSubmit} disabled={isSubmitting} className="flex-[2] h-14 rounded-xl bg-primary text-white font-bold hover:bg-primary-hover disabled:opacity-50">{isSubmitting ? t.submitting : t.next}</button></div>
+          </div>
+        </div>
+      );
+    };
+
+    const SignupOptionalScreen = ({ userId, onComplete, lang }) => {
+      const t = TEXT[lang];
+      const PREF_TAG_KEYS = t.prefTagKeys;
+      const [selectedTags, setSelectedTags] = useState([]);
+      const [allowLoc, setAllowLoc] = useState(false);
+      const [allergies, setAllergies] = useState('');
+      const [customPreferences, setCustomPreferences] = useState('');
+
+      const toggleTag = (tagKey) => setSelectedTags(p => p.includes(tagKey) ? p.filter(t => t !== tagKey) : [...p, tagKey]);
+
+      const handleFinish = async () => {
+        try {
+          await api.updateUserInfo(userId, null, JSON.stringify({
+            tags: selectedTags,
+            allowLocation: allowLoc,
+            allergies: allergies.trim(),
+            customPreferences: customPreferences.trim()
+          }));
+        } catch (e) { console.error(e); }
+        onComplete();
+      };
+
+      return (
+        <div className="animate-fade-in flex min-h-screen w-full items-center justify-center bg-background-light dark:bg-background-dark p-4">
+          <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg text-center">
+            <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{t.welcome}</h1>
+            <p className="text-gray-500 dark:text-gray-400 mb-8">{t.prefTitle}</p>
+            <div className="flex flex-wrap gap-2 justify-center mb-6">
+              {PREF_TAG_KEYS.map(tagKey => (<button key={tagKey} onClick={() => toggleTag(tagKey)} className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedTags.includes(tagKey) ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}>{t.prefTags[tagKey]}</button>))}
+            </div>
+            <div className="mb-6 text-left space-y-4">
+              <div>
+                <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.allergiesLabel} <span className="text-gray-400 text-xs">({t.optional})</span></label>
+                <input
+                  type="text"
+                  className="w-full h-12 rounded-xl px-4 border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white text-sm"
+                  placeholder={t.allergiesPlaceholder}
+                  value={allergies}
+                  onChange={e => setAllergies(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.customPreferencesLabel} <span className="text-gray-400 text-xs">({t.optional})</span></label>
+                <textarea
+                  className="w-full rounded-xl p-4 border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white min-h-[100px] text-sm resize-none"
+                  placeholder={t.customPreferencesPlaceholder}
+                  value={customPreferences}
+                  onChange={e => setCustomPreferences(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="mb-8 text-left bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={allowLoc} onChange={e => setAllowLoc(e.target.checked)} className="mt-1 rounded text-primary w-5 h-5" />
+                <div><span className="block text-sm font-bold text-gray-900 dark:text-white">{t.locAgree}</span><span className="text-xs text-gray-500 dark:text-gray-400">{t.locAgreeDesc}</span></div>
+              </label>
+            </div>
+            <button onClick={handleFinish} className="w-full h-14 rounded-xl bg-primary text-white font-bold hover:bg-primary-hover shadow-md">{t.saveStart}</button>
+          </div>
+        </div>
+      );
+    };
+
+    const WelcomeScreen = ({ nick, onStart, lang }) => {
+      const t = TEXT[lang];
+      return (
+        <div className="animate-fade-in flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4 text-center">
+          <div className="mb-8 text-6xl">🎉</div>
+          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-4">{t.welcome}, {nick}!</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">{t.welcomeSub}</p>
+          <button onClick={onStart} className="px-10 py-4 bg-primary text-white text-xl font-bold rounded-2xl hover:bg-primary-hover shadow-xl transform transition hover:scale-105">{t.start}</button>
+        </div>
+      );
+    };
+
+    const MyAccountScreen = ({ userId, onClose, onLogout, lang, setLang, onNavigate }) => {
+      const t = TEXT[lang];
+      const [tab, setTab] = useState('PROFILE');
+      const [newNick, setNewNick] = useState('');
+      const [myTags, setMyTags] = useState([]);
+      const [allowLoc, setAllowLoc] = useState(false);
+      const [allergies, setAllergies] = useState('');
+      const [customPreferences, setCustomPreferences] = useState('');
+      const [curPw, setCurPw] = useState('');
+      const [newPw, setNewPw] = useState('');
+      const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
+      const [isLoading, setIsLoading] = useState(false);
+      const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+      const PREF_TAG_KEYS = t.prefTagKeys;
+      useEffect(() => {
+        setIsLoading(true);
+        api.getUserInfo(userId).then(info => {
+          setNewNick(info.nickname);
+          const prefs = JSON.parse(info.preferences || '{}');
+          setMyTags(prefs.tags || []);
+          setAllowLoc(prefs.allowLocation || false);
+          setAllergies(prefs.allergies || '');
+          setCustomPreferences(prefs.customPreferences || '');
+          setIsLoading(false);
+        });
+      }, [userId]);
+      const toggleTag = (tag) => setMyTags(p => p.includes(tag) ? p.filter(t => t !== tag) : [...p, tag]);
+      const saveProfile = async () => {
+        try {
+          await api.updateUserInfo(userId, newNick, JSON.stringify({
+            tags: myTags,
+            allowLocation: allowLoc,
+            allergies: allergies.trim(),
+            customPreferences: customPreferences.trim()
+          }));
+          alert(lang === 'ko' ? '저장되었습니다.' : 'Saved.');
+        } catch (e) { alert('Error'); }
+      };
+      const savePassword = async () => {
+        const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*?_~])[A-Za-z\d!@#$%^&*?_~]{8,}$/;
+        if (!pwRegex.test(newPw)) return alert(t.pwRule);
+        try { await api.changePassword(userId, curPw, newPw); alert(lang === 'ko' ? '변경됨' : 'Changed'); setCurPw(''); setNewPw(''); } catch (e) { alert('Error'); }
+      };
+      const toggleDarkMode = () => {
+        const isDark = !darkMode; setDarkMode(isDark);
+        if (isDark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
+      };
+      const handleDeleteAccount = async () => { if (confirm(lang === 'ko' ? '탈퇴?' : 'Delete?')) { try { await api.deleteAccount(userId); onLogout(); } catch (e) { alert('Error'); } } };
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="sticky top-0 z-50 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 justify-between bg-background-light dark:bg-background-dark">
+            <div className="flex items-center gap-2">
+              <button onClick={onClose} className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors">
+                <span className="material-symbols-outlined text-2xl">arrow_back</span>
+              </button>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t.myAccount}</h1>
+            </div>
+            <div className="relative">
+              <button 
+                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl">menu</span>
+              </button>
+              {showSettingsMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                  <button onClick={() => onNavigate('MY_ACCOUNT')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 계정' : 'My Account'}</button>
+                  <button onClick={() => onNavigate('MY_HISTORY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '나의 추천 기록' : 'My History'}</button>
+                  <button onClick={() => onNavigate('MY_ACTIVITY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 활동' : 'My Activity'}</button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button 
+                    onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+                    className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                  >
+                    {lang === 'ko' ? '언어: 한국어' : 'Language: English'}
+                  </button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button 
+                    onClick={onLogout}
+                    className="w-full px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-bold"
+                  >
+                    {lang === 'ko' ? '로그아웃' : 'Logout'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </header>
+          <div className="flex-1 overflow-y-auto p-6 max-w-2xl mx-auto w-full">
+            {isLoading ? (<div className="flex flex-col items-center justify-center h-full"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div><p className="text-gray-500">{t.fetching}</p></div>) : (
+              <>
+                <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm mb-6"><span className="font-bold text-gray-900 dark:text-white">{t.darkMode}</span><button onClick={toggleDarkMode} className={`w-12 h-6 rounded-full p-1 transition-colors ${darkMode ? 'bg-primary' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${darkMode ? 'translate-x-6' : ''}`}></div></button></div>
+                <div className="flex gap-2 mb-6 border-b border-gray-200 dark:border-gray-700 pb-1"><button onClick={() => setTab('PROFILE')} className={`px-4 py-2 font-bold ${tab === 'PROFILE' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}`}>{t.profile}</button><button onClick={() => setTab('PASSWORD')} className={`px-4 py-2 font-bold ${tab === 'PASSWORD' ? 'text-primary border-b-2 border-primary' : 'text-gray-500'}`}>{t.changePw}</button><button onClick={() => setTab('DANGER')} className={`px-4 py-2 font-bold ${tab === 'DANGER' ? 'text-red-500 border-b-2 border-red-500' : 'text-gray-500'}`}>{t.danger}</button></div>
+                {tab === 'PROFILE' && (<div className="space-y-6"><div><label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.nick}</label><input className="w-full rounded-xl h-12 px-4 border-gray-300 dark:bg-gray-900 dark:text-white" value={newNick} onChange={e => setNewNick(e.target.value)} /></div><div><label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.tagTitle}</label><div className="flex flex-wrap gap-2">{PREF_TAG_KEYS.map(tagKey => (<button key={tagKey} onClick={() => toggleTag(tagKey)} className={`px-3 py-1 rounded-full text-sm border transition-colors ${myTags.includes(tagKey) ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'}`}>{t.prefTags[tagKey]}</button>))}</div></div><div><label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.allergiesLabel} <span className="text-gray-400 text-xs font-normal">({t.optional})</span></label><input type="text" className="w-full rounded-xl h-12 px-4 border-gray-300 dark:bg-gray-900 dark:text-white text-sm" placeholder={t.allergiesPlaceholder} value={allergies} onChange={e => setAllergies(e.target.value)} /></div><div><label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.customPreferencesLabel} <span className="text-gray-400 text-xs font-normal">({t.optional})</span></label><textarea className="w-full rounded-xl p-4 border-gray-300 dark:bg-gray-900 dark:text-white min-h-[100px] text-sm resize-none" placeholder={t.customPreferencesPlaceholder} value={customPreferences} onChange={e => setCustomPreferences(e.target.value)}></textarea></div><div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl"><div><span className="block font-bold text-gray-900 dark:text-white">{t.allowLoc}</span><span className="text-xs text-gray-500">{t.locAgreeDesc}</span></div><button onClick={() => setAllowLoc(!allowLoc)} className={`w-12 h-6 rounded-full p-1 transition-colors ${allowLoc ? 'bg-primary' : 'bg-gray-300'}`}><div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${allowLoc ? 'translate-x-6' : ''}`}></div></button></div><button onClick={saveProfile} className="w-full h-12 rounded-xl bg-primary text-white font-bold">{t.save}</button></div>)}
+                {tab === 'PASSWORD' && (<div className="space-y-4"><div><label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.currentPw}</label><input type="password" class="w-full rounded-xl h-12 px-4 border-gray-300 dark:bg-gray-900 dark:text-white" value={curPw} onChange={e => setCurPw(e.target.value)} /></div><div><label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">{t.newPw}</label><input type="password" class="w-full rounded-xl h-12 px-4 border-gray-300 dark:bg-gray-900 dark:text-white" value={newPw} onChange={e => setNewPw(e.target.value)} /></div><button onClick={savePassword} className="w-full h-12 rounded-xl bg-primary text-white font-bold">{t.change}</button></div>)}
+                {tab === 'DANGER' && (<div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800"><h3 className="text-red-600 dark:text-red-400 font-bold mb-2">{t.danger}</h3><p className="text-sm text-red-500 dark:text-red-300 mb-4">{t.dangerDesc}</p><button onClick={handleDeleteAccount} className="px-4 py-2 bg-red-500 text-white rounded-lg font-bold text-sm hover:bg-red-600">{t.deleteAcc}</button></div>)}
+              </>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const MoodSelectionScreen = ({ userId, onBack, onRecommend, onOpenSettings, lang, setLang, onNavigate, onLogout }) => {
+      const t = TEXT[lang];
+      const [sel, setSel] = useState([]);
+      const [custom, setCustom] = useState('');
+      const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+      const MOOD_GROUPS = lang === 'ko' ? [
+        { title: '긍정적 에너지', items: ["행복한", "뿌듯한", "설레는", "활기찬", "기대되는", "재밌는", "기운 나는"] },
+        { title: '차분함 & 집중', items: ["안정된", "차분한", "집중하는", "고민이 많은"] },
+        { title: '지침 & 부정적', items: ["슬픈", "화난", "지친", "불안한", "외로운", "부담되는", "우울한", "답답한", "식욕 없는", "공허한", "멍한", "귀찮은", "심심한", "무기력한"] }
+      ] : [
+        { title: 'Positive', items: ["Happy", "Proud", "Excited", "Energetic", "Hopeful", "Fun", "Energized"] },
+        { title: 'Calm & Focus', items: ["Calm", "Peaceful", "Focused", "Thoughtful"] },
+        { title: 'Negative & Tired', items: ["Sad", "Angry", "Tired", "Anxious", "Lonely", "Stressed", "Depressed", "Frustrated", "No appetite", "Empty", "Dazed", "Annoyed", "Bored", "Unmotivated"] }
+      ];
+      const SITUATION_GROUPS = lang === 'ko' ? [
+        { title: '일과 학업', items: ["과제/업무", "회의/수업", "마감 임박", "시험 준비", "야근/밤샘"] },
+        { title: '활동과 휴식', items: ["운동", "산책", "휴식", "게임/영화", "독서", "혼자만의 시간", "SNS", "그냥 누워있음"] },
+        { title: '신체 상태', items: ["배고픔", "속이 불편함", "체력 방전", "숙취"] },
+        { title: '날씨', items: ["더워요", "추워요", "비/눈 와요", "날씨가 좋아요"] },
+        { title: '누구와 함께', items: ["혼밥", "친구와", "연인과", "가족과"] }
+      ] : [
+        { title: 'Work & Study', items: ["Assignment/Work", "Meeting/Class", "Deadline", "Exam Prep", "Overtime/All-nighter"] },
+        { title: 'Activity & Rest', items: ["Exercise", "Walk", "Rest", "Gaming/Movie", "Reading", "Alone time", "Social Media", "Just lying down"] },
+        { title: 'Physical Condition', items: ["Hungry", "Stomach upset", "Exhausted", "Hangover"] },
+        { title: 'Weather', items: ["Hot", "Cold", "Rainy/Snowy", "Nice weather"] },
+        { title: 'With Whom', items: ["Solo meal", "With friends", "With partner", "With family"] }
+      ];
+      const toggle = (k) => setSel(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="px-4 py-3 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur z-10">
+            <div className="flex items-center gap-1">
+              <button onClick={onBack} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><span className="material-symbols-outlined">arrow_back</span></button>
+              <h1 className="font-bold text-xl text-gray-900 dark:text-white">{t.newChoice}</h1>
+            </div>
+            <div className="flex items-center gap-2 relative">
+              <button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full shadow-md font-bold text-primary hover:bg-gray-50 text-xs">{lang === 'ko' ? 'KR' : 'EN'} | <span className="text-gray-400">{lang === 'ko' ? 'EN' : 'KR'}</span></button>
+              <button onClick={() => setShowSettingsMenu(!showSettingsMenu)} className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"><span className="material-symbols-outlined text-2xl">menu</span></button>
+              {showSettingsMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50" style={{ top: '100%' }}>
+                  <button onClick={() => { onNavigate && onNavigate('MY_ACCOUNT'); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 계정' : 'My Account'}</button>
+                  <button onClick={() => { onNavigate && onNavigate('MY_HISTORY'); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '나의 추천 기록' : 'My History'}</button>
+                  <button onClick={() => { onNavigate && onNavigate('MY_ACTIVITY'); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 활동' : 'My Activity'}</button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button onClick={() => { onLogout && onLogout(); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-bold">{lang === 'ko' ? '로그아웃' : 'Logout'}</button>
+                </div>
+              )}
+            </div>
+          </header>
+          <main className="p-6 max-w-4xl mx-auto w-full pb-24">
+            <section className="mb-8"><h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.howAreYou}</h2>{MOOD_GROUPS.map((g, i) => (<div key={i} className="mb-4"><h3 className="text-sm font-bold text-gray-500 mb-2">{g.title}</h3><div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">{g.items.map(item => (<button key={item} onClick={() => toggle(item)} className={`h-10 rounded-lg border text-sm font-medium transition-colors ${sel.includes(item) ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>{item}</button>))}</div></div>))}</section>
+            <section className="mb-8"><h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.howAreYouSit}</h2>{SITUATION_GROUPS.map((g, i) => (<div key={i} className="mb-4"><h3 className="text-sm font-bold text-gray-500 mb-2">{g.title}</h3><div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">{g.items.map(item => (<button key={item} onClick={() => toggle(item)} className={`h-10 rounded-lg border text-sm font-medium transition-colors ${sel.includes(item) ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>{item}</button>))}</div></div>))}</section>
+            <label className="block font-bold text-gray-900 dark:text-white mb-2">{t.customPlace}</label><textarea className="w-full rounded-xl p-4 border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white min-h-[120px]" value={custom} onChange={e => setCustom(e.target.value)}></textarea>
+          </main>
+          <div className="fixed bottom-0 left-0 w-full p-4 bg-white/90 dark:bg-gray-900/90 border-t border-gray-200 dark:border-gray-800 flex justify-center"><button onClick={() => onRecommend(sel, custom)} className="w-full max-w-md h-14 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover">{t.recommend}</button></div>
+        </div>
+      );
+    };
+
+    const MainScreen = ({ userId, nick, onNav, onOpenSettings, lang, setLang, isAdmin, onOpenAdmin }) => {
+      const t = TEXT[lang];
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="p-6 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <img
+                src="https://drive.google.com/thumbnail?id=1jAn7I4BghJ3NipNC4tHf_e7M6KfQSp5i&sz=w64"
+                className="w-8 h-8 dark:hidden"
+                alt="PickEase Logo"
+                referrerPolicy="no-referrer"
+              />
+              <img
+                src="https://drive.google.com/thumbnail?id=1wj93h18OVzRNZ9-8i9Zne8mOsl_vfGT5&sz=w64"
+                className="w-8 h-8 hidden dark:block"
+                alt="PickEase Logo"
+                referrerPolicy="no-referrer"
+              />
+              <span className="text-2xl font-bold text-text-light dark:text-white">PickEase</span>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap justify-end"><span className="hidden sm:inline text-gray-600 dark:text-gray-300">{t.hello}, {nick}{lang === 'ko' ? '님' : ''}</span><button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md font-bold text-primary hover:bg-gray-50 text-sm">{lang === 'ko' ? 'KR' : 'EN'} | <span className="text-gray-400">{lang === 'ko' ? 'EN' : 'KR'}</span></button>{isAdmin && <button onClick={onOpenAdmin} className="px-4 py-2 bg-primary text-white rounded-full shadow-md text-sm font-bold hover:bg-primary-hover">{t.adminDashboard}</button>}<button onClick={onOpenSettings} className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center"><span className="material-symbols-outlined">menu</span></button></div></header>
+          <main className="flex-1 flex flex-col md:flex-row items-center justify-center gap-6 p-4">
+            <div className="text-center"><button onClick={() => onNav('SIMPLE')} className="w-full sm:w-[420px] h-[240px] bg-primary rounded-[32px] flex flex-col items-center justify-center gap-4 text-white hover:-translate-y-2 transition-transform shadow-lg"><span className="material-symbols-outlined text-5xl bg-white text-primary rounded-full p-2">add</span><span className="text-2xl font-bold">{t.newChoice}</span></button><p className="mt-3 text-gray-500 dark:text-gray-400">{t.newDesc}</p></div>
+            <div className="text-center"><button onClick={() => onNav('RANDOM')} className="w-full sm:w-[420px] h-[240px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[32px] flex flex-col items-center justify-center gap-4 text-gray-900 dark:text-white hover:-translate-y-2 transition-transform shadow-sm"><span className="material-symbols-outlined text-5xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 rounded-full p-2">check</span><span className="text-2xl font-bold">{t.simpleChoice}</span></button><p className="mt-3 text-gray-500 dark:text-gray-400">{lang === 'ko' ? `${nick}님의 과거 데이터 기반 자동 추천` : `${nick}'s past data-based auto recommendation`}</p></div>
+          </main>
+        </div>
+      );
+    };
+
+
+    // New: LocationInputModal (Custom Input)
+    const LocationInputModal = ({ isOpen, onClose, onConfirm, lang }) => {
+      if (!isOpen) return null;
+      const t = TEXT[lang];
+      const [val, setVal] = useState('');
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+          <div className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.locManual}</h2>
+            <input className="w-full h-12 rounded-xl border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white px-4 mb-4" placeholder={t.locManualInput} value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => e.key === 'Enter' && val.trim() && onConfirm(val.trim())} />
+            <div className="flex gap-3">
+              <button onClick={onClose} className="flex-1 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold text-gray-600 dark:text-gray-300">{t.cancel}</button>
+              <button onClick={() => val.trim() && onConfirm(val.trim())} className="flex-1 h-12 rounded-xl bg-primary text-white font-bold hover:bg-primary-hover">{t.search}</button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // New: LocationCheckModal
+    const LocationCheckModal = ({ isOpen, onClose, onCurrent, onManual, lang }) => {
+      if (!isOpen) return null;
+      const t = TEXT[lang];
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+          <div className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t.locCheckTitle}</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm whitespace-pre-wrap">{t.locPrompt}</p>
+            <div className="flex flex-col gap-3">
+              <button onClick={onCurrent} className="w-full h-12 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined">my_location</span> {t.locCurrent}
+              </button>
+              <button onClick={onManual} className="w-full h-12 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined">keyboard</span> {t.locManual}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const RestaurantModal = ({ isOpen, onClose, results, loading, lang }) => {
+      if (!isOpen) return null;
+      const t = TEXT[lang];
+      let parsedResults = [];
+      try { parsedResults = JSON.parse(results); } catch (e) { parsedResults = null; }
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+          <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4"><h2 className="text-xl font-bold text-gray-900 dark:text-white">{t.searchResult}</h2><button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"><span className="material-symbols-outlined">close</span></button></div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {loading ? (<div className="flex flex-col items-center justify-center py-10"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div><p className="text-gray-600 dark:text-gray-300">{t.searching}</p></div>) : (
+                parsedResults && Array.isArray(parsedResults) ? (
+                  <div className="space-y-3">
+                    {parsedResults.map((r, i) => (
+                      <button
+                        key={i}
+                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name)}`, '_blank')}
+                        className="w-full bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left cursor-pointer"
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-bold text-gray-900 dark:text-white text-lg hover:text-primary transition-colors">
+                            {r.name}
+                          </h3>
+                          <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-sm font-bold flex items-center gap-1 shrink-0"><span className="material-symbols-outlined text-sm fill-icon">star</span>{r.rating}</span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{r.summary}</p>
+                      </button>
+                    ))}
+                  </div>
+                ) : (<div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed">{results || "결과를 찾을 수 없습니다."}</div>)
+              )}
+            </div>
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700"><button onClick={onClose} className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-colors">확인</button></div>
+          </div>
+        </div>
+      );
+    };
+
+    const ResultsScreen = ({ foods, onBack, onSet, onRef, onFb, onSv, lang, setLang, selectedKeywords, customMood, moodMessage, onNavigate, onLogout }) => {
+      const t = TEXT[lang];
+      const [locCheckOpen, setLocCheckOpen] = useState(false);
+      const [locInputOpen, setLocInputOpen] = useState(false);
+      const [resModalOpen, setResModalOpen] = useState(false);
+      const [resLoading, setResLoading] = useState(false);
+      const [resData, setResData] = useState('');
+      const [targetFood, setTargetFood] = useState('');
+      const [additionalRequest, setAdditionalRequest] = useState('');
+      const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+
+      const initiateSearch = (foodName) => { setTargetFood(foodName); setLocCheckOpen(true); };
+
+      const handleCurrentLocation = () => {
+        setLocCheckOpen(false);
+        setResModalOpen(true); setResLoading(true);
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => { api.findNearbyRestaurants(targetFood, { lat: pos.coords.latitude, lng: pos.coords.longitude }, lang).then(res => { setResData(res.text); setResLoading(false); }); },
+            (err) => { setResModalOpen(false); setLocInputOpen(true); }
+          );
+        } else { setResModalOpen(false); setLocInputOpen(true); }
+      };
+
+      const handleManualLocation = (loc) => {
+        setLocInputOpen(false);
+        setResModalOpen(true); setResLoading(true);
+        api.findNearbyRestaurants(targetFood, { query: loc }, lang).then(res => { setResData(res.text); setResLoading(false); });
+      };
+
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="px-4 py-3 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur z-10"><div className="flex items-center gap-2"><button onClick={onBack}><span className="material-symbols-outlined">arrow_back</span></button><h1 className="font-bold text-xl text-gray-900 dark:text-white">{t.results}</h1></div><div className="relative"><button onClick={() => setShowSettingsMenu(!showSettingsMenu)} className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"><span className="material-symbols-outlined text-2xl">menu</span></button>{showSettingsMenu && (<div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"><button onClick={() => { onNavigate('MY_ACCOUNT'); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 계정' : 'My Account'}</button><button onClick={() => { onNavigate('MY_HISTORY'); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '나의 추천 기록' : 'My History'}</button><button onClick={() => { onNavigate('MY_ACTIVITY'); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 활동' : 'My Activity'}</button><hr className="my-2 border-gray-200 dark:border-gray-700" /><button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '언어: 한국어' : 'Language: English'}</button><hr className="my-2 border-gray-200 dark:border-gray-700" /><button onClick={() => { onLogout(); setShowSettingsMenu(false); }} className="w-full px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-bold">{lang === 'ko' ? '로그아웃' : 'Logout'}</button></div>)}</div></header>
+          <main className="p-6 max-w-5xl mx-auto w-full">
+            {moodMessage && foods.length > 0 && (
+              <div className="mb-6 w-full flex justify-center">
+                <div className="w-full max-w-[calc(100%-3rem)] md:w-[calc(100%+1.5rem)] md:max-w-none bg-gradient-to-r from-primary/10 to-blue-100 dark:from-primary/20 dark:to-blue-900/30 rounded-2xl border border-primary/20 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="material-symbols-outlined text-primary text-xl shrink-0">favorite</span>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium leading-relaxed text-sm">{moodMessage}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {foods.map((f, i) => (
+                <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col">
+                  <div className="flex items-start gap-3 mb-4"><div className="bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">{i + 1}</div><h2 className="text-xl font-bold text-gray-900 dark:text-white">{f.name}</h2></div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6 flex-1 pl-11">{f.reason}</p>
+                  <div className="flex items-center justify-between pl-11 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <button onClick={() => initiateSearch(f.name)} className="text-primary font-bold flex items-center gap-1 hover:underline"><span className="material-symbols-outlined text-lg">location_on</span>{t.findRes}</button>
+                    <div className="flex gap-2">
+                      <button onClick={() => onFb(i, 'LIKE')} className={`p-2 rounded-full transition-transform active:scale-90 ${f.isLiked ? 'text-red-500 animate-boing' : 'text-gray-300 hover:text-red-500'}`}><span className={`material-symbols-outlined text-3xl ${f.isLiked ? 'fill-icon' : ''}`}>favorite</span></button>
+                      <button onClick={() => onFb(i, 'DISLIKE')} className={`p-2 rounded-full transition-transform active:scale-90 ${f.isDisliked ? 'text-blue-500 animate-boing' : 'text-gray-300 hover:text-blue-500'}`}><span className={`material-symbols-outlined text-3xl ${f.isDisliked ? 'fill-icon' : ''}`}>thumb_down</span></button>
+                      <button onClick={() => onSv(i)} className={`p-2 rounded-full transition-transform active:scale-90 ${f.isSaved ? 'text-black dark:text-white animate-boing' : 'text-gray-300 hover:text-black dark:hover:text-white'}`}><span className={`material-symbols-outlined text-3xl ${f.isSaved ? 'fill-icon' : ''}`}>bookmark</span></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </main>
+          <div className="p-6 max-w-5xl mx-auto w-full space-y-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">
+                {lang === 'ko' ? '추가로 원하는 게 있으신가요?' : 'Any additional preferences?'}
+              </label>
+              <textarea
+                className="w-full rounded-xl p-4 border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-white min-h-[100px] text-sm resize-none"
+                placeholder={lang === 'ko' ? '예: 더 매운 음식, 가벼운 음식, 특정 재료 포함 등...' : 'e.g., spicier food, lighter meal, specific ingredients, etc...'}
+                value={additionalRequest}
+                onChange={e => setAdditionalRequest(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-center">
+              <button
+                onClick={() => onRef(additionalRequest)}
+                className="px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary-hover"
+              >
+                {t.refresh}
+              </button>
+            </div>
+          </div>
+          <LocationCheckModal isOpen={locCheckOpen} onClose={() => setLocCheckOpen(false)} onCurrent={handleCurrentLocation} onManual={() => { setLocCheckOpen(false); setLocInputOpen(true); }} lang={lang} />
+          <LocationInputModal isOpen={locInputOpen} onClose={() => setLocInputOpen(false)} onConfirm={handleManualLocation} lang={lang} />
+          <RestaurantModal isOpen={resModalOpen} onClose={() => setResModalOpen(false)} loading={resLoading} results={resData} lang={lang} />
+        </div>
+      );
+    };
+
+    const SettingsModal = ({ isOpen, onClose, onLogout, onMyAccount, onHistory, onActivity, lang }) => {
+      if (!isOpen) return null;
+      const t = TEXT[lang];
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+          <div className="w-full max-w-xs bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-bold text-center mb-6 text-gray-900 dark:text-white">{t.settings}</h2>
+            <div className="space-y-3">
+              <button onClick={onMyAccount} className="w-full h-12 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold flex items-center px-4 gap-3 text-gray-900 dark:text-white hover:bg-gray-200"><span className="material-symbols-outlined">person</span>{t.myAccount}</button>
+              <button onClick={onHistory} className="w-full h-12 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold flex items-center px-4 gap-3 text-gray-900 dark:text-white hover:bg-gray-200"><span className="material-symbols-outlined">calendar_month</span>{t.history}</button>
+              <button onClick={onActivity} className="w-full h-12 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold flex items-center px-4 gap-3 text-gray-900 dark:text-white hover:bg-gray-200"><span className="material-symbols-outlined">history</span>{t.activity}</button>
+              <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
+              <div className="flex gap-3"><button onClick={onLogout} className="flex-[1] h-14 rounded-xl bg-transparent text-red-500 font-bold hover:bg-red-50">{t.logout}</button><button onClick={onClose} className="flex-[1.5] h-14 rounded-xl bg-primary text-white font-bold hover:bg-primary-hover">{t.close}</button></div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const AdminPerformanceScreen = ({ userId, onClose, lang, setLang }) => {
+      const t = TEXT[lang];
+      const [trend, setTrend] = useState([]);
+      const [cumulativeTrend, setCumulativeTrend] = useState([]);
+      const [userList, setUserList] = useState([]);
+      const [selectedUser, setSelectedUser] = useState('ALL');
+      const [isLoading, setIsLoading] = useState(true);
+      const canvasRef = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        setIsLoading(true);
+        api.getPerformanceTrendData(userId, selectedUser === 'ALL' ? '' : selectedUser).then(res => {
+          setTrend(res.trend || []);
+          setCumulativeTrend(res.cumulativeTrend || []);
+          setUserList(res.users || []);
+          setIsLoading(false);
+        }).catch(err => {
+          alert(err.message || 'Error');
+          setIsLoading(false);
+          onClose();
+        });
+      }, [userId, lang, onClose, selectedUser]);
+
+      useEffect(() => {
+        if (!window.Chart) return;
+        if (chartRef.current) {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+        if (isLoading || trend.length === 0 || !canvasRef.current) return;
+        chartRef.current = new Chart(canvasRef.current, {
+          type: 'line',
+          data: {
+            labels: trend.map(point => `${point.attempt}`),
+            datasets: [
+              {
+                label: t.perfDatasetLabel,
+                data: trend.map(point => point.average),
+                tension: 0.35,
+                borderColor: '#3182f6',
+                backgroundColor: 'rgba(49,130,246,0.15)',
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#1b64da'
+              },
+              {
+                label: lang === 'ko' ? '누적 평균 성능' : 'Cumulative Average',
+                data: cumulativeTrend.map(point => point.average),
+                tension: 0.35,
+                borderColor: '#ff9f43',
+                backgroundColor: 'rgba(255,159,67,0.15)',
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#ff9f43'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              x: {
+                title: { display: true, text: t.perfAttemptAxis }
+              },
+              y: {
+                min: 0,
+                max: 1,
+                title: { display: true, text: selectedUser === 'ALL' ? t.perfValueAxis : t.perfValueAxisSingle }
+              }
+            }
+          }
+        });
+      }, [trend, isLoading, lang, selectedUser]);
+
+      useEffect(() => () => {
+        if (chartRef.current) {
+          chartRef.current.destroy();
+          chartRef.current = null;
+        }
+      }, []);
+
+      return (
+        <div className="animate-fade-in fixed inset-0 z-[100] bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="px-4 py-3 border-b border-gray-200 dark-border-gray-700 flex items-center gap-2 justify-between">
+            <div className="flex items-center gap-2">
+              <button onClick={onClose}><span className="material-symbols-outlined">arrow_back</span></button>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t.adminDashboard}</h1>
+            </div>
+            <button onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')} className="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-full shadow-md font-bold text-primary hover:bg-gray-50 text-xs">
+              {lang === 'ko' ? 'KR' : 'EN'} | <span className="text-gray-400">{lang === 'ko' ? 'EN' : 'KR'}</span>
+            </button>
+          </header>
+          <div className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto w-full space-y-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{t.perfTrendTitle}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t.perfTrendDesc}</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-1 gap-2 flex-wrap">
+                  <button onClick={() => setSelectedUser('ALL')} className={`px-4 py-2 rounded-xl font-bold text-sm border ${selectedUser === 'ALL' ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700'}`}>
+                    {t.perfAllUsers}
+                  </button>
+                  <button onClick={() => setSelectedUser(userList.length > 0 ? userList[0].userId : '')} disabled={!userList.length} className={`px-4 py-2 rounded-xl font-bold text-sm border ${selectedUser !== 'ALL' ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 border-gray-900 dark:border-gray-100' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-700'} ${!userList.length ? 'opacity-50 pointer-events-none' : ''}`}>
+                    {selectedUser !== 'ALL' ? selectedUser : (userList.length ? `${userList[0].userId}` : t.perfSelectUser)}
+                  </button>
+                </div>
+                {selectedUser !== 'ALL' && (
+                  <select value={selectedUser} onChange={e => setSelectedUser(e.target.value)} className="h-10 min-w-[200px] rounded-xl border-gray-300 dark:bg-gray-900 dark-border-gray-700 dark-text-white px-3 text-sm">
+                    {userList.map(user => (
+                      <option key={user.userId} value={user.userId}>
+                        {`${user.userId} (${t.perfAttemptInfo.replace('{count}', user.attempts)})`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            </div>
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-500 dark:text-gray-400">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p>{t.perfTrendLoading}</p>
+              </div>
+            ) : trend.length === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-dashed border-gray-300 dark:border-gray-600 p-10 text-center text-gray-500 dark:text-gray-400">
+                {t.perfTrendEmpty}
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 h-[420px]">
+                <canvas ref={canvasRef} className="w-full h-full"></canvas>
+              </div>
+            )}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{lang === 'ko' ? '성능 지표 (KPI) 계산 방식' : 'KPI Formula'}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                {lang === 'ko'
+                  ? '회차별 성능 지표는 (좋아요 수 + 1.5 × 저장 수 − 싫어요 수)을 전체 클릭 수로 나눈 값으로 측정됩니다. 이 값은 0~1 사이로 정규화되어 전체 추천 성능을 추적합니다.'
+                  : 'The KPI for each attempt is calculated as (likes + 1.5 × saves − dislikes) divided by total clicks, normalized between 0 and 1 to track overall recommendation performance.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // MyHistoryScreen: Auto load today
+    const MyHistoryScreen = ({ userId, onClose, lang, setLang, onNavigate }) => {
+      const t = TEXT[lang];
+      const [dates, setDates] = useState([]);
+      const [selDate, setSelDate] = useState(null);
+      const [items, setItems] = useState([]);
+      const [curr, setCurr] = useState(new Date());
+      const [isLoading, setIsLoading] = useState(true);
+      const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+
+      // Load dates first, then load today
+      useEffect(() => {
+        setIsLoading(true);
+        api.getHistoryDates(userId).then(d => {
+          setDates(d);
+          // Auto select today
+          const today = new Date();
+          const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          setSelDate(todayStr);
+
+          // If today has records, load them
+          if (d.includes(todayStr)) {
+            api.getHistoryByDate(userId, todayStr).then(res => {
+              setItems(res);
+              setIsLoading(false);
+            }).catch(() => {
+              setIsLoading(false);
+            });
+          } else {
+            setIsLoading(false);
+          }
+        }).catch(() => {
+          setIsLoading(false);
+        });
+      }, [userId]);
+
+      const year = curr.getFullYear();
+      const month = curr.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const startDay = new Date(year, month, 1).getDay();
+      const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+
+      const clickDate = async (d) => {
+        const s = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        setSelDate(s);
+        setItems([]);
+        if (dates.includes(s)) {
+          setIsLoading(true);
+          try { const loadedItems = await api.getHistoryByDate(userId, s); setItems(loadedItems); }
+          catch (e) { console.error(e); }
+          finally { setIsLoading(false); }
+        } else { setIsLoading(false); }
+      };
+
+      const groupedItems = items.reduce((acc, item) => {
+        const key = item.input || t.simpleInput;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {});
+
+      const handleHistoryFeedback = async (inputKey, idx, type) => {
+        const targetItem = groupedItems[inputKey][idx];
+        const isLike = type === 'LIKE';
+        const newItems = items.map(it => {
+          if (it.name === targetItem.name) {
+            if ((isLike && it.isLiked) || (!isLike && it.isDisliked)) { return { ...it, isLiked: false, isDisliked: false }; }
+            else { return { ...it, isLiked: isLike, isDisliked: !isLike }; }
+          }
+          return it;
+        });
+        setItems(newItems);
+        if ((isLike && targetItem.isLiked) || (!isLike && targetItem.isDisliked)) { await api.saveFeedback(userId, targetItem.name, '없음'); }
+        else { await api.saveFeedback(userId, targetItem.name, isLike ? '좋아요' : '싫어요'); }
+      };
+
+      const handleHistorySave = async (inputKey, idx) => {
+        const targetItem = groupedItems[inputKey][idx];
+        const newItems = items.map(it => { if (it.name === targetItem.name) return { ...it, isSaved: !it.isSaved }; return it; });
+        setItems(newItems);
+        if (targetItem.isSaved) { await api.deleteFood(userId, targetItem.name, 'saved'); } else { await api.saveFood(userId, targetItem.name); }
+      };
+
+      const isTodayEmpty = !dates.includes(todayStr);
+
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="sticky top-0 z-50 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 justify-between bg-background-light dark:bg-background-dark">
+            <div className="flex items-center gap-2">
+              <button onClick={onClose} className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors">
+                <span className="material-symbols-outlined text-2xl">arrow_back</span>
+              </button>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t.history}</h1>
+            </div>
+            <div className="relative">
+              <button 
+                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl">menu</span>
+              </button>
+              {showSettingsMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                  <button onClick={() => onNavigate('MY_ACCOUNT')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 계정' : 'My Account'}</button>
+                  <button onClick={() => onNavigate('MY_HISTORY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '나의 추천 기록' : 'My History'}</button>
+                  <button onClick={() => onNavigate('MY_ACTIVITY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 활동' : 'My Activity'}</button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button 
+                    onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+                    className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                  >
+                    {lang === 'ko' ? '언어: 한국어' : 'Language: English'}
+                  </button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button 
+                    onClick={onClose}
+                    className="w-full px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-bold"
+                  >
+                    {lang === 'ko' ? '로그아웃' : 'Logout'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </header>
+          <div className="p-4 flex-1 overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm mb-6 max-w-3xl mx-auto">
+              <div className="flex justify-between mb-6 font-bold dark:text-white text-xl"><button onClick={() => setCurr(new Date(year, month - 1, 1))}>&lt;</button>{year}.{month + 1}<button onClick={() => setCurr(new Date(year, month + 1, 1))}>&gt;</button></div>
+              <div className="grid grid-cols-7 gap-4 text-center mb-2 text-gray-500"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+              <div className="grid grid-cols-7 gap-4 text-center">
+                {[...Array(startDay).keys()].map(i => <div key={'e' + i} />)}
+                {[...Array(daysInMonth).keys()].map(i => {
+                  const d = i + 1;
+                  const s = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                  const hasRecord = dates.includes(s);
+                  const isToday = s === todayStr;
+                  let btnClass = `h-14 w-14 rounded-full mx-auto flex items-center justify-center text-lg transition-all `;
+                  if (isToday) { btnClass += 'bg-primary text-white font-bold shadow-md '; if (selDate === s) btnClass += 'ring-4 ring-gray-900 dark:ring-white'; }
+                  else if (selDate === s) { btnClass += 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-md'; }
+                  else if (hasRecord) { btnClass += 'text-gray-900 dark:text-white font-extrabold hover:bg-gray-100 dark:hover:bg-gray-700'; }
+                  else { btnClass += 'text-gray-300 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'; }
+                  return <button key={d} onClick={() => clickDate(d)} className={btnClass}>{d}</button>;
+                })}
+              </div>
+            </div>
+            {!isLoading && isTodayEmpty && !selDate && (<div className="max-w-3xl mx-auto text-center p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-sm"><p className="text-gray-600 dark:text-gray-300 mb-4">{t.noRecToday}</p><button onClick={onClose} className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover">{t.startRec}</button></div>)}
+            {isLoading && !selDate && (
+              <div className="max-w-3xl mx-auto text-center py-10">
+                <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+                <p className="text-gray-500">{t.fetching}</p>
+              </div>
+            )}
+            {selDate && (
+              <div className="max-w-3xl mx-auto space-y-6 pb-10">
+                <h3 className="font-bold mb-2 dark:text-white text-lg border-b pb-2 border-gray-200 dark:border-gray-700">{selDate}</h3>
+                {isLoading ? (<div className="text-center py-10"><div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-2"></div><p className="text-gray-500">{t.fetching}</p></div>) : items.length === 0 ? (<p className="text-center text-gray-500 py-8">{t.noRecDay}</p>) : (
+                  Object.keys(groupedItems).map((key, gIdx) => (
+                    <div key={gIdx} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+                      <h4 className="text-sm font-bold text-primary mb-4 flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 p-3 rounded-xl w-fit"><span className="material-symbols-outlined text-lg">search</span> {key}</h4>
+                      <div className="space-y-1">
+                        {groupedItems[key].map((it, i) => (
+                          <div key={i} className="flex justify-between items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors">
+                            <div className="flex items-center gap-3"><span className="bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-md text-xs font-bold text-gray-500 min-w-[24px] text-center">#{it.rank}</span><span className="dark:text-white font-bold text-base">{it.name}</span></div>
+                            <div className="flex gap-1">
+                              <button onClick={() => handleHistoryFeedback(key, i, 'LIKE')} className={`p-2 rounded-full transition-transform active:scale-90 ${it.isLiked ? 'text-red-500 animate-boing' : 'text-gray-300 hover:text-red-500'}`}><span className={`material-symbols-outlined text-xl ${it.isLiked ? 'fill-icon' : ''}`}>favorite</span></button>
+                              <button onClick={() => handleHistoryFeedback(key, i, 'DISLIKE')} className={`p-2 rounded-full transition-transform active:scale-90 ${it.isDisliked ? 'text-blue-500 animate-boing' : 'text-gray-300 hover:text-blue-500'}`}><span className={`material-symbols-outlined text-xl ${it.isDisliked ? 'fill-icon' : ''}`}>thumb_down</span></button>
+                              <button onClick={() => handleHistorySave(key, i)} className={`p-2 rounded-full transition-transform active:scale-90 ${it.isSaved ? 'text-black dark:text-white animate-boing' : 'text-gray-300 hover:text-black dark:hover:text-white'}`}><span className={`material-symbols-outlined text-xl ${it.isSaved ? 'fill-icon' : ''}`}>bookmark</span></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const MyActivityScreen = ({ userId, onClose, lang, setLang, onNavigate }) => {
+      const [liked, setLiked] = useState([]);
+      const [disliked, setDisliked] = useState([]);
+      const [saved, setSaved] = useState([]);
+      const [isLoading, setIsLoading] = useState(true);
+      const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+      const t = TEXT[lang];
+
+      const loadData = useCallback(async () => {
+        setIsLoading(true);
+        const [l, d, s] = await Promise.all([
+          api.getLikedFoods(userId),
+          api.getDislikedFoods(userId),
+          api.getSavedFoods(userId)
+        ]);
+        setLiked(l); setDisliked(d); setSaved(s);
+        setIsLoading(false);
+      }, [userId]);
+
+      useEffect(() => { loadData(); }, [loadData]);
+
+      const handleDelete = async (item, type) => {
+        if (!confirm(lang === 'ko' ? '삭제하시겠습니까?' : 'Delete?')) return;
+        if (type === 'liked') setLiked(p => p.filter(i => i !== item));
+        if (type === 'disliked') setDisliked(p => p.filter(i => i !== item));
+        if (type === 'saved') setSaved(p => p.filter(i => i !== item));
+        await api.deleteFood(userId, item, type);
+        loadData();
+      };
+
+      const renderSection = (title, items, icon, colorClass, bgClass, type) => (
+        <div className={`flex-1 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col min-h-[200px] ${bgClass}`}>
+          <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${colorClass}`}>
+            <div className="p-2 rounded-full bg-white/50 dark:bg-black/20"><span className={`material-symbols-outlined fill-icon text-2xl`}>{icon}</span></div>
+            {title}
+            <span className="text-sm opacity-60 ml-auto bg-white/50 dark:bg-black/20 px-2 py-0.5 rounded-full">{items.length}</span>
+          </h3>
+          <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pr-1">
+            {items.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-gray-400 text-sm italic opacity-70">{t.empty}</div>
+            ) : (
+              items.map((it, i) => (
+                <div key={i} className="p-3 bg-white/60 dark:bg-black/20 rounded-xl text-sm font-bold text-gray-800 dark:text-gray-100 shadow-sm flex items-center justify-between group transition-all">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                    {it}
+                  </div>
+                  <button
+                    onClick={() => handleDelete(it, type)}
+                    className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full hover:bg-white/50 dark:hover:bg-black/30"
+                    title="Delete"
+                  >
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="animate-fade-in min-h-screen bg-background-light dark:bg-background-dark flex flex-col">
+          <header className="sticky top-0 z-50 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2 justify-between bg-background-light dark:bg-background-dark">
+            <div className="flex items-center gap-2">
+              <button onClick={onClose} className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors">
+                <span className="material-symbols-outlined text-2xl">arrow_back</span>
+              </button>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t.activity}</h1>
+            </div>
+            <div className="relative">
+              <button 
+                onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl">menu</span>
+              </button>
+              {showSettingsMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+                  <button onClick={() => onNavigate('MY_ACCOUNT')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 계정' : 'My Account'}</button>
+                  <button onClick={() => onNavigate('MY_HISTORY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '나의 추천 기록' : 'My History'}</button>
+                  <button onClick={() => onNavigate('MY_ACTIVITY')} className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">{lang === 'ko' ? '내 활동' : 'My Activity'}</button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button 
+                    onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+                    className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                  >
+                    {lang === 'ko' ? '언어: 한국어' : 'Language: English'}
+                  </button>
+                  <hr className="my-2 border-gray-200 dark:border-gray-700" />
+                  <button 
+                    onClick={onClose}
+                    className="w-full px-4 py-2 text-left text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-bold"
+                  >
+                    {lang === 'ko' ? '로그아웃' : 'Logout'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </header>
+          {isLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-500 dark:text-gray-400">{t.fetching}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 flex-1 overflow-y-auto flex flex-col md:flex-row gap-4">
+              {renderSection(t.saved, saved, 'bookmark', 'text-gray-800 dark:text-white', 'bg-gray-100 dark:bg-gray-800', 'saved')}
+              {renderSection(t.likedItems, liked, 'favorite', 'text-red-500', 'bg-red-50 dark:bg-red-900/10', 'liked')}
+              {renderSection(t.disliked, disliked, 'thumb_down', 'text-blue-500', 'bg-blue-50 dark:bg-blue-900/10', 'disliked')}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // ChatBot Component (New)
+    const ChatBot = ({ lang }) => {
+      const t = TEXT[lang];
+      const [isOpen, setIsOpen] = useState(false);
+      const [messages, setMessages] = useState([]);
+      const [input, setInput] = useState('');
+      const [loading, setLoading] = useState(false);
+      const scrollRef = useRef(null);
+
+      useEffect(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }, [messages, isOpen]);
+
+      const handleSend = async () => {
+        if (!input.trim()) return;
+        const userMsg = { role: 'user', text: input };
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+        setLoading(true);
+
+        try {
+          const res = await api.chatWithAI(userMsg.text);
+          setMessages(prev => [...prev, { role: 'model', text: res.text }]);
+        } catch (e) {
+          setMessages(prev => [...prev, { role: 'model', text: "Error occurred." }]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <>
+          <button onClick={() => setIsOpen(true)} className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:scale-110 transition-transform animate-fade-in">
+            <span className="material-symbols-outlined text-3xl">smart_toy</span>
+          </button>
+
+          {isOpen && (
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:justify-end sm:p-6 pointer-events-none">
+              <div className="bg-white dark:bg-gray-900 w-full sm:w-[400px] h-[80vh] sm:h-[600px] rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col pointer-events-auto border border-gray-200 dark:border-gray-700 animate-fade-in">
+                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-primary text-white rounded-t-2xl">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined">smart_toy</span>
+                    <span className="font-bold">{t.chatTitle}</span>
+                  </div>
+                  <button onClick={() => setIsOpen(false)}><span className="material-symbols-outlined">close</span></button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50" ref={scrollRef}>
+                  {messages.length === 0 && <p className="text-center text-gray-400 text-sm mt-10">안녕하세요! 무엇을 도와드릴까요?</p>}
+                  {messages.map((m, i) => (
+                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${m.role === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-tl-none'}`}>
+                        {m.text}
+                      </div>
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="flex justify-start">
+                      <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-700">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-75"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 h-10 rounded-xl border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-white px-3 text-sm"
+                      placeholder={t.chatInput}
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSend()}
+                    />
+                    <button onClick={handleSend} disabled={loading || !input.trim()} className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center disabled:opacity-50">
+                      <span className="material-symbols-outlined text-lg">send</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      );
+    };
+
+    const App = () => {
+      const [lang, setLang] = useState('ko');
+      const [screen, setScreen] = useState('LOGIN');
+      const [userId, setUserId] = useState('');
+      const [nick, setNick] = useState('');
+      const [foods, setFoods] = useState([]);
+      const [lastParams, setLastParams] = useState(null);
+      const [settingsOpen, setSettingsOpen] = useState(false);
+      const [isAdmin, setIsAdmin] = useState(false);
+
+      const [moodMessage, setMoodMessage] = useState('');
+
+      const handleLogin = (id, n, screenType) => { 
+        if (!id) {
+          // Logout
+          setUserId('');
+          setNick('');
+          setIsAdmin(false);
+          setScreen('LOGIN');
+        } else {
+          // Login
+          setUserId(id); 
+          setNick(n); 
+          setIsAdmin(ADMIN_IDS.includes(id)); 
+          if (screenType === 'SIMPLE') {
+            setScreen('SIMPLE');
+          } else if (screenType === 'RANDOM') {
+            rand();
+          } else if (screenType === 'MY_ACCOUNT') {
+            setScreen('MY_ACCOUNT');
+          } else if (screenType === 'MY_HISTORY') {
+            setScreen('MY_HISTORY');
+          } else if (screenType === 'MY_ACTIVITY') {
+            setScreen('MY_ACTIVITY');
+          } else {
+            setScreen('LOGIN_LOGGED_IN');
+          }
+        }
+      };
+      const recommend = (k, m) => {
+        setScreen('LOADING');
+        setMoodMessage('');
+        Promise.all([
+          api.getSimpleRecommendations(userId, k, m, [], lang),
+          api.getMoodCoachMessage(k, m, lang)
+        ]).then(([foodRes, moodRes]) => {
+          setFoods(foodRes.foods);
+          setLastParams({ k, m, ex: foodRes.foods.map(f => f.name) });
+          setMoodMessage(moodRes.text);
+          setScreen('RESULTS');
+        }).catch(() => { alert('Error'); setScreen('MAIN'); });
+      };
+      const rand = () => {
+        setScreen('LOADING');
+        setMoodMessage('');
+        Promise.all([
+          api.getRandomRecommendations(userId, [], lang),
+          api.getMoodCoachMessage([], '', lang)
+        ]).then(([foodRes, moodRes]) => {
+          setFoods(foodRes.foods);
+          setLastParams({ ex: foodRes.foods.map(f => f.name) });
+          setMoodMessage(moodRes.text);
+          setScreen('RESULTS');
+        }).catch(() => { alert('Error'); setScreen('MAIN'); });
+      };
+      const refresh = (additionalRequest = '') => {
+        if (!lastParams) return;
+        setScreen('LOADING');
+        const ex = lastParams.ex;
+        const foodCall = lastParams.k ? api.getSimpleRecommendations(userId, lastParams.k, lastParams.m, ex, lang, additionalRequest) : api.getRandomRecommendations(userId, ex, lang);
+        const moodCall = api.getMoodCoachMessage(lastParams.k || [], lastParams.m || '', lang);
+        Promise.all([foodCall, moodCall]).then(([foodRes, moodRes]) => {
+          setFoods(foodRes.foods);
+          setLastParams({ ...lastParams, ex: [...ex, ...foodRes.foods.map(f => f.name)] });
+          setMoodMessage(moodRes.text);
+          setScreen('RESULTS');
+        });
+      };
+
+      const handleFeedback = async (i, type) => {
+        const nf = [...foods];
+        const f = nf[i];
+        const isLike = type === 'LIKE';
+        if ((isLike && f.isLiked) || (!isLike && f.isDisliked)) {
+          f.isLiked = false; f.isDisliked = false;
+          api.saveFeedback(userId, f.name, '없음');
+        } else {
+          f.isLiked = isLike; f.isDisliked = !isLike;
+          api.saveFeedback(userId, f.name, isLike ? '좋아요' : '싫어요');
+        }
+        setFoods(nf);
+      };
+      const handleSave = async (i) => {
+        const nf = [...foods];
+        const f = nf[i];
+        if (f.isSaved) {
+          f.isSaved = false;
+          api.deleteFood(userId, f.name, 'saved');
+        } else {
+          f.isSaved = true;
+          api.saveFood(userId, f.name);
+        }
+        setFoods(nf);
+      };
+
+      return (
+        <>
+          {(screen === 'LOGIN' || (screen === 'LOGIN_LOGGED_IN' && userId)) && <LoginScreen onLogin={handleLogin} onGoSignup={() => setScreen('SIGNUP1')} onFindPassword={() => setScreen('FIND_PASSWORD')} lang={lang} setLang={setLang} onNavigate={(screenType) => {
+            if (screenType === 'SIMPLE') setScreen('SIMPLE');
+            else if (screenType === 'RANDOM') rand();
+            else if (screenType === 'MY_ACCOUNT') setScreen('MY_ACCOUNT');
+            else if (screenType === 'MY_HISTORY') setScreen('MY_HISTORY');
+            else if (screenType === 'MY_ACTIVITY') setScreen('MY_ACTIVITY');
+          }} isLoggedInProp={!!userId} loggedInUserIdProp={userId} />}
+          {screen === 'FIND_PASSWORD' && <FindPasswordScreen onBack={() => setScreen('LOGIN')} lang={lang} />}
+          {screen === 'SIGNUP1' && <SignupScreen onBack={() => setScreen('LOGIN')} onSuccess={(id, n) => { setUserId(id); setNick(n); setIsAdmin(ADMIN_IDS.includes(id)); setScreen('SIGNUP2'); }} lang={lang} />}
+          {screen === 'SIGNUP2' && <SignupOptionalScreen userId={userId} lang={lang} onComplete={() => setScreen('WELCOME')} />}
+          {screen === 'WELCOME' && <WelcomeScreen nick={nick} lang={lang} onStart={() => setScreen('LOGIN_LOGGED_IN')} />}
+
+          {screen === 'SIMPLE' && <MoodSelectionScreen userId={userId} onBack={() => setScreen('LOGIN_LOGGED_IN')} onRecommend={(k, m) => { recommend(k, m); }} onOpenSettings={() => setSettingsOpen(true)} lang={lang} setLang={setLang} onNavigate={(screenType) => {
+            if (screenType === 'MY_ACCOUNT') setScreen('MY_ACCOUNT');
+            else if (screenType === 'MY_HISTORY') setScreen('MY_HISTORY');
+            else if (screenType === 'MY_ACTIVITY') setScreen('MY_ACTIVITY');
+          }} onLogout={() => { setUserId(''); setIsAdmin(false); setScreen('LOGIN'); }} />}
+          {screen === 'LOADING' && <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}
+          {screen === 'RESULTS' && <ResultsScreen foods={foods} onBack={() => setScreen('LOGIN_LOGGED_IN')} onRef={refresh} onFb={handleFeedback} onSv={handleSave} lang={lang} setLang={setLang} selectedKeywords={lastParams?.k} customMood={lastParams?.m} moodMessage={moodMessage} onNavigate={(screenType) => {
+            if (screenType === 'MY_ACCOUNT') setScreen('MY_ACCOUNT');
+            else if (screenType === 'MY_HISTORY') setScreen('MY_HISTORY');
+            else if (screenType === 'MY_ACTIVITY') setScreen('MY_ACTIVITY');
+          }} onLogout={() => { setUserId(''); setIsAdmin(false); setScreen('LOGIN'); }} />}
+
+          {screen === 'MY_ACCOUNT' && <MyAccountScreen userId={userId} onClose={() => setScreen('LOGIN_LOGGED_IN')} onLogout={() => { setUserId(''); setIsAdmin(false); setScreen('LOGIN'); }} lang={lang} setLang={setLang} onNavigate={(screenType) => {
+            if (screenType === 'SIMPLE') setScreen('SIMPLE');
+            else if (screenType === 'RANDOM') rand();
+            else if (screenType === 'MY_ACCOUNT') setScreen('MY_ACCOUNT');
+            else if (screenType === 'MY_HISTORY') setScreen('MY_HISTORY');
+            else if (screenType === 'MY_ACTIVITY') setScreen('MY_ACTIVITY');
+          }} />}
+          {screen === 'MY_HISTORY' && <MyHistoryScreen userId={userId} onClose={() => setScreen('LOGIN_LOGGED_IN')} lang={lang} setLang={setLang} onNavigate={(screenType) => {
+            if (screenType === 'SIMPLE') setScreen('SIMPLE');
+            else if (screenType === 'RANDOM') rand();
+            else if (screenType === 'MY_ACCOUNT') setScreen('MY_ACCOUNT');
+            else if (screenType === 'MY_HISTORY') setScreen('MY_HISTORY');
+            else if (screenType === 'MY_ACTIVITY') setScreen('MY_ACTIVITY');
+          }} />}
+          {screen === 'MY_ACTIVITY' && <MyActivityScreen userId={userId} onClose={() => setScreen('LOGIN_LOGGED_IN')} lang={lang} setLang={setLang} onNavigate={(screenType) => {
+            if (screenType === 'SIMPLE') setScreen('SIMPLE');
+            else if (screenType === 'RANDOM') rand();
+            else if (screenType === 'MY_ACCOUNT') setScreen('MY_ACCOUNT');
+            else if (screenType === 'MY_HISTORY') setScreen('MY_HISTORY');
+            else if (screenType === 'MY_ACTIVITY') setScreen('MY_ACTIVITY');
+          }} />}
+          {screen === 'ADMIN_METRICS' && <AdminPerformanceScreen userId={userId} onClose={() => setScreen('MAIN')} lang={lang} setLang={setLang} />}
+
+          <SettingsModal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} lang={lang}
+            onLogout={() => { setUserId(''); setIsAdmin(false); setScreen('LOGIN'); setSettingsOpen(false); }}
+            onMyAccount={() => { setSettingsOpen(false); setScreen('MY_ACCOUNT'); }}
+            onHistory={() => { setSettingsOpen(false); setScreen('MY_HISTORY'); }}
+            onActivity={() => { setSettingsOpen(false); setScreen('MY_ACTIVITY'); }}
+          />
+
+          {screen !== 'LOGIN' && screen !== 'SIGNUP1' && screen !== 'SIGNUP2' && screen !== 'WELCOME' && <ChatBot lang={lang} />}
+        </>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+
+</html>
